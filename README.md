@@ -6,15 +6,15 @@ I want to build this language because, as someone who speaks two languages, when
 
 In addition to your written summary, write a preliminary formal grammar similarly to how formal grammars have been presented in the lab write-ups summarizing the major parts of the language that you are aware of. Note that this grammar will very likely be incomplete and require subsequent revision.
 I want to use C-like grammar. So, 
-+ is add
-- is subtract
-/ is divide
-* is multiply 
-% is remainder 
-druckf("") is print 
-weile(){} is a while loop 
-für(){} is a for loop
-wenn(){} sonst wenn(){} sonst(){} is a if, else if, else statement. 
+"+" is add
+"-" is subtract
+"/" is divide
+"*" is multiply 
+"%" is remainder 
+"druckf("")" is print 
+"weile(){}" is a while loop 
+"für(){}" is a for loop
+"wenn(){} sonst wenn(){} sonst(){}" is a if, else if, else statement. 
 
 (this will be heavily edited in the future)
 
