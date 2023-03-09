@@ -1,3 +1,7 @@
+/**
+* This code was taken from Lab 4 from CSC-312. I will make edits when given the chance
+*/
+
 /***** Lexer Datatypes ********************************************************/
 
 export type LexerState = {
