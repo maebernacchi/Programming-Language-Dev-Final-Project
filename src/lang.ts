@@ -3,45 +3,33 @@
 */
 
 /***** Abstract Syntax Tree ***************************************************/
-export type Num = { tag: 'num', value: number }
-export const num = (value: number): Num => ({ tag: 'num', value })
+export type Zahl = { tag: 'zahl', value: number }
+export const zahl = (value: number): Zahl => ({ tag: 'zahl', value })
 
 export type Bool = { tag: 'bool', value: boolean }
 export const bool = (value: boolean): Bool => ({ tag: 'bool', value })
 
-export type Not = { tag: 'not', exp: Exp }
-export const not = (exp: Exp): Exp => ({ tag: 'not', exp })
+export type Nicht = { tag: 'nicht', exp: Exp }
+export const nicht = (exp: Exp): Exp => ({ tag: 'nicht', exp })
 
 export type Plus = { tag: 'plus', e1: Exp, e2: Exp }
 export const plus = (e1: Exp, e2: Exp): Exp => ({ tag: 'plus', e1, e2 })
 
-export type Eq = { tag: 'eq', e1: Exp, e2: Exp }
-export const eq = (e1: Exp, e2: Exp): Exp => ({ tag: 'eq', e1, e2 })
+export type Gleich = { tag: 'gleich', e1: Exp, e2: Exp }
+export const gleich = (e1: Exp, e2: Exp): Exp => ({ tag: 'gleich', e1, e2 })
 
-export type And = { tag: 'and', e1: Exp, e2: Exp }
-export const and = (e1: Exp, e2: Exp): Exp => ({ tag: 'and', e1, e2 })
+export type Und = { tag: 'und', e1: Exp, e2: Exp }
+export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
 
-export type Or = { tag: 'or', e1: Exp, e2: Exp }
-export const or = (e1: Exp, e2: Exp): Exp => ({ tag: 'or', e1, e2 })
+export type Sonst = { tag: 'sonst', e1: Exp, e2: Exp }
+export const sonst = (e1: Exp, e2: Exp): Exp => ({ tag: 'sonst', e1, e2 })
 
-export type If = { tag: 'if', e1: Exp, e2: Exp, e3: Exp }
-export const ife = (e1: Exp, e2: Exp, e3: Exp): Exp =>
-  ({ tag: 'if', e1, e2, e3 })
+export type Ob = { tag: 'ob', e1: Exp, e2: Exp, e3: Exp }
+export const ob = (e1: Exp, e2: Exp, e3: Exp): Exp =>
+  ({ tag: 'ob', e1, e2, e3 })
 
-export type Pair = { tag: 'pair', e1: Value, e2: Value}
-export const pair = (e1: Value, e2: Value): Value => ({ tag: 'pair', e1, e2})
-
-export type Fst = { tag: 'fst', e: Exp}
-export const fst = (e: Exp): Exp => ({ tag: 'fst', e})
-
-export type Snd = { tag: 'snd', e: Exp}
-export const snd = (e: Exp): Exp => ({ tag: 'snd', e})
-
-export type Unit = { tag: 'unit'}
-export const unit: Unit = ({tag: 'unit' }) 
-
-export type Exp = Num | Bool | Not | Plus | Eq | And | Or | If | Unit | Pair | Fst | Snd
-export type Value = Num | Bool | Unit | Pair
+export type Exp = Zahl | Bool | Nicht | Plus | Gleich | Und | Sonst | Ob
+export type Value = Zahl | Bool
 
 export type TyNat = { tag: 'nat' }
 export const tynat: Typ = ({ tag: 'nat' })
@@ -49,13 +37,7 @@ export const tynat: Typ = ({ tag: 'nat' })
 export type TyBool = { tag: 'bool' }
 export const tybool: Typ = ({ tag: 'bool' })
 
-export type TyUnit = { tag: 'unit'}
-export const tyunit: TyUnit = ({tag: 'unit' })  
-
-export type TyPair = { tag: 'pair'}
-export const typair: TyPair = ({tag: 'pair' }) 
-
-export type Typ = TyNat | TyBool | TyUnit | TyPair
+export type Typ = TyNat | TyBool
 
 /***** Pretty-printer *********************************************************/
 
@@ -64,18 +46,14 @@ export type Typ = TyNat | TyBool | TyUnit | TyPair
  */
 export function prettyExp (e: Exp): string {
   switch (e.tag) {
-    case 'num': return `${e.value}`
+    case 'zahl': return `${e.value}`
     case 'bool': return e.value ? 'true' : 'false'
-    case 'unit': return `${e.tag}`
-    case 'not': return `(not ${prettyExp(e.exp)})`
+    case 'nicht': return `(nicht ${prettyExp(e.exp)})`
     case 'plus': return `(+ ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'eq': return `(= ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'and': return `(and ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'or': return `(or ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'if': return `(if ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
-    case 'pair': return `(pair ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'fst': return `(fst ${prettyExp(e.e)})`
-    case 'snd': return `(snd ${prettyExp(e.e)})`
+    case 'gleich': return `(= ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
+    case 'und': return `(und ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
+    case 'sonst': return `(sonst ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
+    case 'ob': return `(ob ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
   }
 }
 
@@ -86,8 +64,6 @@ export function prettyTyp (t: Typ): string {
   switch (t.tag) {
     case 'nat': return 'nat'
     case 'bool': return 'bool'
-    case 'unit': return 'unit'
-    case 'pair': return 'pair'
   }
 }
 
@@ -98,34 +74,11 @@ export function prettyTyp (t: Typ): string {
  */
 export function evaluate (e: Exp): Value {
   switch (e.tag) {
-    case 'num':
+    case 'zahl':
       return e
     case 'bool':
       return e
-    case 'unit': 
-      return e
-    case 'pair':{
-      const v1 = evaluate(e.e1)
-      const v2 = evaluate(e.e2)
-      return pair(v1, v2)
-    }
-    case 'fst':{
-      const f = evaluate(e.e)
-      if(f.tag === 'pair'){
-        return evaluate(f.e1)
-        } else {
-        throw new Error(`Type error: Expected a pair but a ${f.tag} was given`)
-      }
-      }
-    case 'snd':{
-      const s = evaluate(e.e)
-      if (s.tag === 'pair') {
-        return evaluate(s.e2)
-      } else {
-        throw new Error(`Type error: Expected a pair but a ${s.tag} was given`)
-      }
-    }
-    case 'not': {
+    case 'nicht': {
       const v = evaluate(e)
       if (v.tag === 'bool') {
         return bool(!v.value)
@@ -136,27 +89,27 @@ export function evaluate (e: Exp): Value {
     case 'plus': {
       const v1 = evaluate(e.e1)
       const v2 = evaluate(e.e2)
-      if (v1.tag === 'num' && v2.tag === 'num') {
-        return num(v1.value + v2.value)
+      if (v1.tag === 'zahl' && v2.tag === 'zahl') {
+        return zahl(v1.value + v2.value)
       } else {
-        throw new Error(`Type error: plus expects two numbers but a ${v1.tag} and ${v2.tag} was given.`)
+        throw new Error(`Type error: plus expects two numbers but a ${v1.tag} und ${v2.tag} was given.`)
       }
     }
-    case 'eq': {
+    case 'gleich': {
       const v1 = evaluate(e.e1)
       const v2 = evaluate(e.e2)
       return bool(v1 === v2)
     }
-    case 'and': {
+    case 'und': {
       const v1 = evaluate(e.e1)
       const v2 = evaluate(e.e2)
       if (v1.tag === 'bool' && v2.tag === 'bool') {
         return bool(v1.value && v2.value)
       } else {
-        throw new Error(`Type error: && expects two booleans but a ${v1.tag} and ${v2.tag} was given.`)
+        throw new Error(`Type error: && expects two booleans but a ${v1.tag} und ${v2.tag} was given.`)
       }
     }
-    case 'or': {
+    case 'sonst': {
       const v1 = evaluate(e.e1)
       const v2 = evaluate(e.e2)
       if (v1.tag === 'bool' && v2.tag === 'bool') {
@@ -165,7 +118,7 @@ export function evaluate (e: Exp): Value {
         throw new Error(`Type error: || expects two booleans but a ${v1.tag} and ${v2.tag} was given.`)
       }
     }
-    case 'if': {
+    case 'ob': {
       const v = evaluate(e.e1)
       if (v.tag === 'bool') {
         return v.value ? evaluate(e.e2) : evaluate(e.e3)

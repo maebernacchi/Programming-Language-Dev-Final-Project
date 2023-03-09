@@ -1,8 +1,3 @@
-/**
-* This code was taken from Lab 4 from CSC-312. I will make edits when given the chance
-*/
-
-
 import * as L from './lang'
 import * as Lex from './lexer'
 
@@ -32,27 +27,25 @@ function wrap3<T> (f: (_x1: T, _x2: T, _x3: T) => T): (args: T[]) => T {
 /** A mapping from function symbols to AST constructors for those functions */
 const functionMap: Map<string, (args: L.Exp[]) => L.Exp> =
   new Map([
-    ['not', wrap1(L.not)],
+    ['nicht', wrap1(L.nicht)],
     ['+', wrap2(L.plus)],
-    ['=', wrap2(L.eq)],
-    ['and', wrap2(L.and)],
-    ['or', wrap2(L.or)],
-    ['if', wrap3(L.ife)],
-    ['fst', wrap1(L.fst)],
-    ['snd', wrap1(L.snd)]
+    ['=', wrap2(L.gleich)],
+    ['und', wrap2(L.und)],
+    ['sonst', wrap2(L.sonst)],
+    ['ob', wrap3(L.ob)]
   ])
 
 function chomp(state: ParserState, toks: Lex.Tok[], tag: string): void {
   if (toks[state.index].tag === tag) {
     state.index += 1
   } else {
-    throw new Error(`Parser error: expected '${tag}', found '${toks[state.index].tag}'`)
+    throw new Error(`Parser Felher: geschätzt '${tag}', wir haben '${toks[state.index].tag} gefunden'`)
   }
 }
 
 function parseExp(state: ParserState, toks: Lex.Tok[]): L.Exp {
   if (state.index >= toks.length) {
-    throw new Error('Parser error: unexpected end of input')
+    throw new Error('Parser Felher: unerwartet Ende von Einsatz')
   }
   const tok = toks[state.index]
   if (tok.tag === 'true') {
@@ -61,17 +54,14 @@ function parseExp(state: ParserState, toks: Lex.Tok[]): L.Exp {
   } else if (tok.tag === 'false') {
     state.index += 1
     return L.bool(false)
-  } else if (tok.tag === 'unit'){
-    state.index += 1
-    return L.unit
   } else if (tok.tag === 'num') {
     state.index += 1
-    return L.num(tok.value)
+    return L.zahl(tok.value)
   } else if (tok.tag === '(') {
     chomp(state, toks, '(')
     const head = toks[state.index++]
     if (head.tag !== 'ident') {
-      throw new Error(`Parser error: head of application is not an identifier: '${Lex.prettyTok(head)}'`)
+      throw new Error(`Parser Felher: Kopf von Anwendung ist nicht eine Identifikator: '${Lex.prettyTok(head)}'`)
     } else {
       const id = head.value
       const exps = []
@@ -82,11 +72,11 @@ function parseExp(state: ParserState, toks: Lex.Tok[]): L.Exp {
       if (functionMap.has(id)) {
         return functionMap.get(id)!(exps)
       } else {
-        throw new Error(`Parser error: unrecognized form '${id}'`)
+        throw new Error(`Parser Felher: verkannt Form '${id}'`)
       }
     }
   } else {
-    throw new Error(`Parser error: unexpected token: '${Lex.prettyTok(tok)}'`)
+    throw new Error(`Parser Felher: unerwartete Zeichen: '${Lex.prettyTok(tok)}'`)
   }
 }
 
