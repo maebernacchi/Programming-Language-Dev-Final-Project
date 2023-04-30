@@ -16,6 +16,8 @@ export function typecheck(e: L.Exp): L.Typ {
     //Checks bool
     case 'bool':
       return L.tybool
+    case 'null':
+      return L.tynichts
     //Checks not
     case 'nicht':
       let enot = e.exp

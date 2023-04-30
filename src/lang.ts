@@ -1,7 +1,3 @@
-/**
-* This code was taken from Lab 4 from CSC-312. I will make edits when given the chance
-*/
-
 /***** Abstract Syntax Tree ***************************************************/
 export type Zahl = { tag: 'zahl', value: number }
 export const zahl = (value: number): Zahl => ({ tag: 'zahl', value })
@@ -24,12 +20,15 @@ export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
 export type Sonst = { tag: 'sonst', e1: Exp, e2: Exp }
 export const sonst = (e1: Exp, e2: Exp): Exp => ({ tag: 'sonst', e1, e2 })
 
+export type Nichts = { tag: 'null' }
+export const nichts = ({ tag: 'null'})
+
 export type Ob = { tag: 'ob', e1: Exp, e2: Exp, e3: Exp }
 export const ob = (e1: Exp, e2: Exp, e3: Exp): Exp =>
   ({ tag: 'ob', e1, e2, e3 })
 
-export type Exp = Zahl | Bool | Nicht | Plus | Gleich | Und | Sonst | Ob
-export type Value = Zahl | Bool
+export type Exp = Zahl | Bool | Nicht | Plus | Gleich | Und | Sonst | Nichts | Ob 
+export type Value = Zahl | Bool | Nichts
 
 export type TyNat = { tag: 'nat' }
 export const tynat: Typ = ({ tag: 'nat' })
@@ -37,7 +36,10 @@ export const tynat: Typ = ({ tag: 'nat' })
 export type TyBool = { tag: 'bool' }
 export const tybool: Typ = ({ tag: 'bool' })
 
-export type Typ = TyNat | TyBool
+export type TyNichts = { tag: 'null' }
+export const tynichts: Typ = ({ tag: 'null'})
+
+export type Typ = TyNat | TyBool | TyNichts
 
 /***** Pretty-printer *********************************************************/
 
@@ -53,6 +55,7 @@ export function prettyExp (e: Exp): string {
     case 'gleich': return `(= ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
     case 'und': return `(und ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
     case 'sonst': return `(sonst ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
+    case 'null' : return e.tag
     case 'ob': return `(ob ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
   }
 }
@@ -64,6 +67,7 @@ export function prettyTyp (t: Typ): string {
   switch (t.tag) {
     case 'nat': return 'nat'
     case 'bool': return 'bool'
+    case 'null': return 'null'
   }
 }
 
@@ -77,6 +81,8 @@ export function evaluate (e: Exp): Value {
     case 'zahl':
       return e
     case 'bool':
+      return e
+    case 'null':
       return e
     case 'nicht': {
       const v = evaluate(e)
