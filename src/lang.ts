@@ -1,4 +1,7 @@
-/* **** Abstract Syntax Tree ***************************************************/ 
+/* eslint-disable @typescript-eslint/space-before-blocks */
+/* eslint-disable spaced-comment */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* **** Abstract Syntax Tree ***************************************************/
 export type Exp = Zahl | Bool | Nicht | Plus | Gleich | Und | Sonst | Nichts | Ob
 export type Zahl = { tag: 'zahl', value: number }
 export type Bool = { tag: 'bool', value: boolean }
@@ -17,7 +20,7 @@ export const plus = (e1: Exp, e2: Exp): Exp => ({ tag: 'plus', e1, e2 })
 export const gleich = (e1: Exp, e2: Exp): Exp => ({ tag: 'gleich', e1, e2 })
 export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
 export const sonst = (e1: Exp, e2: Exp): Exp => ({ tag: 'sonst', e1, e2 })
-export const nichts = ({ tag: 'null'})
+export const nichts = ({ tag: 'null' })
 export const ob = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'ob', e1, e2, e3 })
 
 export type Value = Zahl | Bool | Nichts
@@ -28,7 +31,7 @@ export type TyNichts = { tag: 'null' }
 
 export const tynat: Typ = ({ tag: 'nat' })
 export const tybool: Typ = ({ tag: 'bool' })
-export const tynichts: Typ = ({ tag: 'null'})
+export const tynichts: Typ = ({ tag: 'null' })
 
 /***** Pretty-printer *********************************************************/
 
@@ -93,7 +96,7 @@ export function evaluate (e: Exp): Value {
     case 'gleich': {
       const v1 = evaluate(e.e1)
       const v2 = evaluate(e.e2)
-      if(v1.tag !== v2.tag){
+      if (v1.tag !== v2.tag){
         throw new Error(`Typ fehler: gleich erwartet ahnliches Typen, aber ein ${v1.tag} und ein ${v2.tag} gegeben war`)
       } else {
         return bool(v1 === v2)
