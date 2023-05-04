@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/consistent-generic-constructors */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import * as L from './lang'
 import * as Lex from './lexer'
 
@@ -5,7 +8,7 @@ type ParserState = {
   index: number
 }
 
-export function mkInitialState(): ParserState {
+export function mkInitialState (): ParserState {
   return { index: 0 }
 }
 
@@ -35,7 +38,7 @@ const functionMap: Map<string, (args: L.Exp[]) => L.Exp> =
     ['ob', wrap3(L.ob)]
   ])
 
-function chomp(state: ParserState, toks: Lex.Tok[], tag: string): void {
+function chomp (state: ParserState, toks: Lex.Tok[], tag: string): void {
   if (toks[state.index].tag === tag) {
     state.index += 1
   } else {
@@ -43,7 +46,7 @@ function chomp(state: ParserState, toks: Lex.Tok[], tag: string): void {
   }
 }
 
-function parseExp(state: ParserState, toks: Lex.Tok[]): L.Exp {
+function parseExp (state: ParserState, toks: Lex.Tok[]): L.Exp {
   if (state.index >= toks.length) {
     throw new Error('Parser Felher: unerwartet Ende von Einsatz')
   }
@@ -80,6 +83,6 @@ function parseExp(state: ParserState, toks: Lex.Tok[]): L.Exp {
   }
 }
 
-export function parse(src: string): L.Exp {
+export function parse (src: string): L.Exp {
   return parseExp(mkInitialState(), Lex.lex(src))
 }
