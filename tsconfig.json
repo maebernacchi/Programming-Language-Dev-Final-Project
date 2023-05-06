@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "module": "es2022",
+    "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "rootDir": "./src",
@@ -11,6 +11,6 @@
     "outDir": "./dist",
     "strict": true,
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "src/lang.ts"],
   "exclude": ["node_modules", "dist"]
 }

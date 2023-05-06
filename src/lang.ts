@@ -2,7 +2,7 @@
 /* eslint-disable spaced-comment */
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* **** Abstract Syntax Tree ***************************************************/
-export type Exp = Zahl | Bool | Nicht | Plus | Gleich | Und | Sonst | Nichts | Ob
+export type Exp = Zahl | Bool | Nicht | Plus | Gleich | Und | Sonst | Nichts | Ob | Feld
 export type Zahl = { tag: 'zahl', value: number }
 export type Bool = { tag: 'bool', value: boolean }
 export type Nicht = { tag: 'nicht', exp: Exp }
@@ -12,6 +12,7 @@ export type Und = { tag: 'und', e1: Exp, e2: Exp }
 export type Sonst = { tag: 'sonst', e1: Exp, e2: Exp }
 export type Nichts = { tag: 'null' }
 export type Ob = { tag: 'ob', e1: Exp, e2: Exp, e3: Exp }
+export type Feld = { tag: 'feld', e1: Typ, e2: Value[] }
 
 export const zahl = (value: number): Zahl => ({ tag: 'zahl', value })
 export const bool = (value: boolean): Bool => ({ tag: 'bool', value })
@@ -22,6 +23,7 @@ export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
 export const sonst = (e1: Exp, e2: Exp): Exp => ({ tag: 'sonst', e1, e2 })
 export const nichts = ({ tag: 'null' })
 export const ob = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'ob', e1, e2, e3 })
+export const feld = (e1: Typ, e2: Value[]): Feld => ({ tag: 'feld', e1, e2 })
 
 export type Value = Zahl | Bool | Nichts
 export type Typ = TyNat | TyBool | TyNichts
@@ -49,6 +51,7 @@ export function prettyExp (e: Exp): string {
     case 'sonst': return `(sonst ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
     case 'null' : return e.tag
     case 'ob': return `(ob ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
+    case 'feld': return `(feld ${prettyTyp(e.e1)} ${e.e2.map(prettyExp).join(' ')})`
   }
 }
 
@@ -127,6 +130,15 @@ export function evaluate (e: Exp): Value {
       } else {
         throw new Error(`Typ fehler: ob erwartet ein booleschen Wert, aber ein ${v.tag} gegeben war.`)
       }
+    }
+    case 'feld': {
+      const w = e.e2[1]
+      let ret: w.tag[]
+      for (let i = 0; i < e.e2.length; i++){
+        if (w.tag !== e.e2[i].tag){
+          throw new Error(`Typ fehler: ob erwartet ${w.tag}, aber ein ${e.e2[i].tag} gegeben war.`)
+        }
+        ret.push(evaluate(e.e2[i]))
     }
   }
 }
