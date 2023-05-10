@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-base-to-string */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/consistent-generic-constructors */
 import * as L from './lang'
 
 function throwArityError (fn: string, expected: number, found: number): never {
@@ -102,71 +106,6 @@ function fiePrim (args: L.Value[]): L.Value {
   }
 }
 
-function noisePrim (args: L.Value[]): L.Value {
-  return L.keyword('screm')
-}
-
-function aniPrim (args: L.Value[]): L.Value {
-  // Presence of Legs, furry?, what noise
-  if (args.length !== 1) {
-    throwArityError('Animal', 1, args.length)
-  } else if (args[0].tag !== 'bool') {
-    throwUnexpectedError('Animal', 'boolean', 0, args[0].tag)
-  } else {
-    return objPrim([L.keyword(':legs'), L.num(4),
-                    L.keyword(':furry'), args[0],
-                    L.keyword(':noise'), noisePrim([L.nole])])
-  }
-}
-
-function dogPrim (args: L.Value[]): L.Value {
-  // input is number for breed, furry?
-  if (args.length !== 2) {
-    throwArityError('Dog', 2, args.length)
-  } else if (args[0].tag !== 'num') {
-    throwUnexpectedError('Dog', 'number', 0, args[0].tag)
-  } else if (args[1].tag !== 'bool') {
-    throwUnexpectedError('Dog', 'boolean', 1, args[1].tag)
-  } else {
-    const dog = objPrim([L.keyword(':breed'), args[0],
-                         L.keyword(':noise'), woof([L.nole])])
-    const parent = aniPrim([args[1]])
-    if (dog.tag === 'object' && parent.tag === 'object') {
-      dog.proto = parent
-    }
-    return dog
-  }
-}
-
-function catPrim (args: L.Value[]): L.Value{
-  //input is number for fur color, furry?
-  if(args.length != 2){
-    throwArityError('Cat', 2, args.length)
-  } else if (args[0].tag !== 'num'){
-    throwUnexpectedError('Cat', 'number', 0, args[0].tag)
-  } else if (args[1].tag !== 'bool'){
-    throwUnexpectedError('Cat', 'boolean', 1, args[1].tag)
-  } else {
-    const cat = objPrim([L.keyword(':fur-color'), args[0],
-                         L.keyword(':noise'), meow([L.nole])])
-                                               
-    
-    const parent = aniPrim([args[1]])
-    if(cat.tag === 'object' && parent.tag === 'object'){
-      cat.proto = parent
-    }
-    return cat
-  }
-}
-
-function woof (args: L.Value[]): L.Value {
-  return L.keyword('woof!')
-}
-
-function meow (args: L.Value[]): L.Value {
-  return L.keyword('meow!')
-}
-
 export function makeInitialEnv (): L.Env {
   return new L.Env(new Map([
     ['+', L.prim('+', plusPrim)],
@@ -175,9 +114,6 @@ export function makeInitialEnv (): L.Env {
     ['/', L.prim('/', divPrim)],
     ['zero?', L.prim('zero?', zeroPrim)],
     ['obj', L.prim('obj', objPrim)],
-    ['field', L.prim('field', fiePrim)],
-    ['Animal', L.prim('animal', aniPrim)],
-    ['Dog', L.prim('dog', dogPrim)],
-    ['Cat', L.prim('cat', catPrim)]
+    ['field', L.prim('field', fiePrim)]
   ]))
 }

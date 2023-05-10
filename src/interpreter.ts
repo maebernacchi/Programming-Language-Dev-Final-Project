@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-generic-constructors */
+/* eslint-disable @typescript-eslint/quotes */
 import * as L from './lang'
 
 /** The output of our programs: a list of strings that our program printed. */
@@ -32,7 +34,7 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
         return head.fn(args)
       } else if (head.tag === 'object') {
         if (args.length % 2 !== 0) {
-          throw new Error(`Runtime error: fuck you, can't count (interpreter.ts line 34)`) 
+          throw new Error(`Runtime error: fuck you, can't count (interpreter.ts line 34)`)
         }
         const ret: Map<string, L.Value> = new Map([])
         for (let i = 0; i < args.length; i += 2) {
@@ -48,7 +50,7 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
       } else {
         throw new Error(`Runtime error: expected closure or primitive or obj, but found '${L.prettyExp(head)}'`)
       }
-    } 
+    }
     case 'if': {
       const v = evaluate(env, e.e1)
       if (v.tag === 'bool') {
@@ -70,7 +72,7 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
 }
 
 /** @returns the result of executing program `prog` under environment `env` */
-export function execute(env: L.Env, prog: L.Prog): Output {
+export function execute (env: L.Env, prog: L.Prog): Output {
   const output: Output = []
   for (const s of prog) {
     switch (s.tag) {

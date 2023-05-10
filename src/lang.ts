@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/quotes */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/prefer-optional-chain */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable spaced-comment */
 
 /***** Abstract Syntax Tree ***************************************************/
 
 // Expressions
 
-export type Exp = Var | Num | Bool | Lam | App | If | Nole | Keyword | Valwrap 
+export type Exp = Var | Num | Bool | Lam | App | If | Nole | Keyword | Valwrap
 export type Var = { tag: 'var', value: string }
 export type Num = { tag: 'num', value: number }
 export type Bool = { tag: 'bool', value: boolean }
@@ -23,8 +30,7 @@ export const app = (head: Exp, args: Exp[]): App => ({ tag: 'app', head, args })
 export const ife = (e1: Exp, e2: Exp, e3: Exp): If => ({ tag: 'if', e1, e2, e3 })
 export const nole: Nole = ({ tag: 'null' })
 export const keyword = (value: string): Keyword => ({ tag: 'keyword', value })
-export const valwrap = (value: Value): Valwrap => ({ tag: 'valwrap', value})
-
+export const valwrap = (value: Value): Valwrap => ({ tag: 'valwrap', value })
 
 export type Value = Num | Bool | Prim | Closure | Nole | Keyword | VObject
 export type Prim = { tag: 'prim', name: string, fn: (args: Value[]) => Value }
