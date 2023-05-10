@@ -1,88 +1,77 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/consistent-generic-constructors */
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
+import * as S from './sexp'
 import * as L from './lang'
-import * as Lex from './lexer'
 
-type ParserState = {
-  index: number
-}
-
-export function mkInitialState (): ParserState {
-  return { index: 0 }
-}
-
-/** @return `f` but as a function that takes an array instead of 1 argument */
-function wrap1<T> (f: (_x: T) => T): (args: T[]) => T {
-  return (args) => f(args[0])
-}
-
-/** @return `f` but as a function that takes an array instead of 2 arguments */
-function wrap2<T> (f: (_x1: T, _x2: T) => T): (args: T[]) => T {
-  return (args) => f(args[0], args[1])
-}
-
-/** @return `f` but as a function that takes an array instead of 3 arguments */
-function wrap3<T> (f: (_x1: T, _x2: T, _x3: T) => T): (args: T[]) => T {
-  return (args) => f(args[0], args[1], args[2])
-}
-
-/** A mapping from function symbols to AST constructors for those functions */
-const functionMap: Map<string, (args: L.Exp[]) => L.Exp> =
-  new Map([
-    ['nicht', wrap1(L.nicht)],
-    ['+', wrap2(L.plus)],
-    ['=', wrap2(L.gleich)],
-    ['und', wrap2(L.und)],
-    ['sonst', wrap2(L.sonst)],
-    ['ob', wrap3(L.ob)]
-  ])
-
-function chomp (state: ParserState, toks: Lex.Tok[], tag: string): void {
-  if (toks[state.index].tag === tag) {
-    state.index += 1
-  } else {
-    throw new Error(`Parser Felher: geschätzt '${tag}', wir haben '${toks[state.index].tag} gefunden'`)
-  }
-}
-
-function parseExp (state: ParserState, toks: Lex.Tok[]): L.Exp {
-  if (state.index >= toks.length) {
-    throw new Error('Parser Felher: unerwartet Ende von Einsatz')
-  }
-  const tok = toks[state.index]
-  if (tok.tag === 'true') {
-    state.index += 1
-    return L.bool(true)
-  } else if (tok.tag === 'false') {
-    state.index += 1
-    return L.bool(false)
-  } else if (tok.tag === 'num') {
-    state.index += 1
-    return L.zahl(tok.value)
-  } else if (tok.tag === '(') {
-    chomp(state, toks, '(')
-    const head = toks[state.index++]
-    if (head.tag !== 'ident') {
-      throw new Error(`Parser Felher: Kopf von Anwendung ist nicht eine Identifikator: '${Lex.prettyTok(head)}'`)
-    } else {
-      const id = head.value
-      const exps = []
-      while (toks[state.index].tag !== ')') {
-        exps.push(parseExp(state, toks))
-      }
-      chomp(state, toks, ')')
-      if (functionMap.has(id)) {
-        return functionMap.get(id)!(exps)
-      } else {
-        throw new Error(`Parser Felher: verkannt Form '${id}'`)
-      }
+/** @returns the expression parsed from the given s-expression. */
+export function translateExp (e: S.Sexp): L.Exp {
+  if (e.tag === 'atom') {
+    if (e.value === 'true') {
+      return L.bool(true)
+    } else if (e.value === 'false') {
+      return L.bool(false)
+    } else if (/\d+$/.test(e.value)) {
+      return L.num(parseInt(e.value))
+    } else if (e.value === 'null') {
+      return L.nole
+    } else { // otherwise it is variable or keyword
+      return (e.value[0] === ':') ? L.keyword(e.value) : L.evar(e.value)
     }
+  } else if (e.exps.length === 0) {
+    throw new Error('Parse error: empty expression list encountered')
   } else {
-    throw new Error(`Parser Felher: unerwartete Zeichen: '${Lex.prettyTok(tok)}'`)
+    const head = e.exps[0]
+    const args = e.exps.slice(1)
+    if (head.tag === 'atom' && head.value === 'lambda') {
+      if (args.length === 0) {
+        throw new Error(`Parse error: 'lambda' expects at least 1 argument but ${args.length} were given`)
+      }
+      const params = args.slice(0, args.length - 1)
+      const body = args[args.length - 1]
+      for (const p of params) {
+        if (p.tag !== 'atom') {
+          throw new Error(`Parse error: 'lambda' expects its arguments to be identifiers but ${S.sexpToString(p)} was given`)
+        }
+      }
+      return L.lam(params.map(p => (p as S.Atom).value), translateExp(body))
+    } else if (head.tag === 'atom' && head.value === 'if') {
+      if (args.length !== 3) {
+        throw new Error(`Parse error: 'if' expects 3 arguments but ${args.length} were given`)
+      } else {
+        return L.ife(translateExp(args[0]), translateExp(args[1]), translateExp(args[2]))
+      }
+    } else {
+      return L.app(translateExp(head), args.map(translateExp))
+    }
   }
 }
 
-export function parse (src: string): L.Exp {
-  return parseExp(mkInitialState(), Lex.lex(src))
+export function translateStmt (e: S.Sexp): L.Stmt {
+  if (e.tag === 'atom') {
+    throw new Error(`Parse error: an atom cannot be a statement: '${e.value}'`)
+  } else {
+    const head = e.exps[0]
+    const args = e.exps.slice(1)
+    if (head.tag !== 'atom') {
+      throw new Error('Parse error: identifier expected at head of operator/form')
+    } else if (head.value === 'define') {
+      if (args.length !== 2) {
+        throw new Error(`Parse error: 'define' expects 2 argument but ${args.length} were given`)
+      } else if (args[0].tag !== 'atom') {
+        throw new Error("Parse error: 'define' expects its first argument to be an identifier")
+      } else {
+        return L.sdefine(args[0].value, translateExp(args[1]))
+      }
+    } else if (head.value === 'print') {
+      if (args.length !== 1) {
+        throw new Error(`Parse error: 'print' expects 1 argument but ${args.length} were given`)
+      } else {
+        return L.sprint(translateExp(args[0]))
+      }
+    } else {
+      throw new Error(`Parse error: unknown statement form '${S.sexpToString(e)}'`)
+    }
+  }
+}
+
+export function translateProg (es: S.Sexp[]): L.Prog {
+  return es.map(translateStmt)
 }

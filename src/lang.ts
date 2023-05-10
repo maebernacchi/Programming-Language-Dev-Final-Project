@@ -1,144 +1,157 @@
-/* eslint-disable @typescript-eslint/space-before-blocks */
 /* eslint-disable spaced-comment */
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
-/* **** Abstract Syntax Tree ***************************************************/
-export type Exp = Zahl | Bool | Nicht | Plus | Gleich | Und | Sonst | Nichts | Ob | Feld
-export type Zahl = { tag: 'zahl', value: number }
+
+/***** Abstract Syntax Tree ***************************************************/
+
+// Expressions
+
+export type Exp = Var | Num | Bool | Lam | App | If | Nole | Keyword | Valwrap 
+export type Var = { tag: 'var', value: string }
+export type Num = { tag: 'num', value: number }
 export type Bool = { tag: 'bool', value: boolean }
-export type Nicht = { tag: 'nicht', exp: Exp }
-export type Plus = { tag: 'plus', e1: Exp, e2: Exp }
-export type Gleich = { tag: 'gleich', e1: Exp, e2: Exp }
-export type Und = { tag: 'und', e1: Exp, e2: Exp }
-export type Sonst = { tag: 'sonst', e1: Exp, e2: Exp }
-export type Nichts = { tag: 'null' }
-export type Ob = { tag: 'ob', e1: Exp, e2: Exp, e3: Exp }
-export type Feld = { tag: 'feld', e1: Typ, e2: Value[] }
+export type Lam = { tag: 'lam', params: string[], body: Exp }
+export type App = { tag: 'app', head: Exp, args: Exp[] }
+export type If = { tag: 'if', e1: Exp, e2: Exp, e3: Exp }
+export type Nole = { tag: 'null' }
+export type Keyword = { tag: 'keyword', value: string }
+export type Valwrap = { tag: 'valwrap', value: Value }
 
-export const zahl = (value: number): Zahl => ({ tag: 'zahl', value })
+export const evar = (value: string): Var => ({ tag: 'var', value })
+export const num = (value: number): Num => ({ tag: 'num', value })
 export const bool = (value: boolean): Bool => ({ tag: 'bool', value })
-export const nicht = (exp: Exp): Exp => ({ tag: 'nicht', exp })
-export const plus = (e1: Exp, e2: Exp): Exp => ({ tag: 'plus', e1, e2 })
-export const gleich = (e1: Exp, e2: Exp): Exp => ({ tag: 'gleich', e1, e2 })
-export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
-export const sonst = (e1: Exp, e2: Exp): Exp => ({ tag: 'sonst', e1, e2 })
-export const nichts = ({ tag: 'null' })
-export const ob = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'ob', e1, e2, e3 })
-export const feld = (e1: Typ, e2: Value[]): Feld => ({ tag: 'feld', e1, e2 })
+export const lam = (params: string[], body: Exp): Lam => ({ tag: 'lam', params, body })
+export const app = (head: Exp, args: Exp[]): App => ({ tag: 'app', head, args })
+export const ife = (e1: Exp, e2: Exp, e3: Exp): If => ({ tag: 'if', e1, e2, e3 })
+export const nole: Nole = ({ tag: 'null' })
+export const keyword = (value: string): Keyword => ({ tag: 'keyword', value })
+export const valwrap = (value: Value): Valwrap => ({ tag: 'valwrap', value})
 
-export type Value = Zahl | Bool | Nichts
-export type Typ = TyNat | TyBool | TyNichts
-export type TyNat = { tag: 'nat' }
-export type TyBool = { tag: 'bool' }
-export type TyNichts = { tag: 'null' }
 
-export const tynat: Typ = ({ tag: 'nat' })
-export const tybool: Typ = ({ tag: 'bool' })
-export const tynichts: Typ = ({ tag: 'null' })
+export type Value = Num | Bool | Prim | Closure | Nole | Keyword | VObject
+export type Prim = { tag: 'prim', name: string, fn: (args: Value[]) => Value }
+export type Closure = { tag: 'closure', params: string[], body: Exp, env: Env }
+export type VObject = { tag: 'object', proto: VObject | Nole, value: Map<string, Value> }
+
+export const prim = (name: string, fn: (args: Value[]) => Value): Prim => ({ tag: 'prim', name, fn })
+export const closure = (params: string[], body: Exp, env: Env): Closure => ({ tag: 'closure', params, body, env })
+export const vobject = (proto: VObject | Nole, value: Map<string, Value>): VObject => ({ tag: 'object', proto, value })
+
+// Statements
+
+export type Stmt = SDefine | SPrint
+export type SDefine = { tag: 'define', id: string, exp: Exp }
+export type SPrint = { tag: 'print', exp: Exp }
+
+export const sdefine = (id: string, exp: Exp): SDefine => ({ tag: 'define', id, exp })
+export const sprint = (exp: Exp): SPrint => ({ tag: 'print', exp })
+
+// Programs
+
+export type Prog = Stmt[]
+
+/***** Runtime Environment ****************************************************/
+
+export class Env {
+  private outer?: Env
+  private bindings: Map<string, Value>
+
+  constructor (bindings?: Map<string, Value>) {
+    this.bindings = bindings || new Map()
+  }
+
+  has (x: string): boolean {
+    return this.bindings.has(x) || (this.outer !== undefined && this.outer.has(x))
+  }
+
+  get (x: string): Value {
+    if (this.bindings.has(x)) {
+      return this.bindings.get(x)!
+    } else if (this.outer !== undefined) {
+      return this.outer.get(x)
+    } else {
+      throw new Error(`Runtime error: unbound variable '${x}'`)
+    }
+  }
+
+  set (x: string, v: Value): void {
+    if (this.bindings.has(x)) {
+      throw new Error(`Runtime error: redefinition of variable '${x}'`)
+    } else {
+      this.bindings.set(x, v)
+    }
+  }
+
+  update (x: string, v: Value): void {
+    this.bindings.set(x, v)
+    if (this.bindings.has(x)) {
+      this.bindings.set(x, v)
+    } else if (this.outer !== undefined) {
+      return this.outer.update(x, v)
+    } else {
+      throw new Error(`Runtime error: unbound variable '${x}'`)
+    }
+  }
+
+  extend1 (x: string, v: Value): Env {
+    const ret = new Env()
+    ret.outer = this
+    ret.bindings = new Map([[x, v]])
+    return ret
+  }
+
+  extend (xs: string[], vs: Value[]): Env {
+    const ret = new Env()
+    ret.outer = this
+    ret.bindings = new Map(xs.map((x, i) => [x, vs[i]]))
+    return ret
+  }
+}
 
 /***** Pretty-printer *********************************************************/
 
-/**
- * @returns a pretty version of the expression `e`, suitable for debugging.
- */
+/** @returns a pretty version of the expression `e`, suitable for debugging. */
 export function prettyExp (e: Exp): string {
   switch (e.tag) {
-    case 'zahl': return `${e.value}`
+    case 'var': return `${e.value}`
+    case 'num': return `${e.value}`
     case 'bool': return e.value ? 'true' : 'false'
-    case 'nicht': return `(nicht ${prettyExp(e.exp)})`
-    case 'plus': return `(+ ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'gleich': return `(= ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'und': return `(und ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'sonst': return `(sonst ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'null' : return e.tag
-    case 'ob': return `(ob ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
-    case 'feld': return `(feld ${prettyTyp(e.e1)} ${e.e2.map(prettyExp).join(' ')})`
+    case 'lam': return `(lambda ${e.params.join(' ')} ${prettyExp(e.body)})`
+    case 'app': return `(${prettyExp(e.head)} ${e.args.map(prettyExp).join(' ')})`
+    case 'if': return `(if ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
+    case 'null': return e.tag
+    case 'keyword': return `${e.value}`
+    case 'valwrap': return `${prettyValue(e.value)}`
   }
 }
 
-/**
- * @returns a pretty version of the type `t`.
- */
-export function prettyTyp (t: Typ): string {
-  switch (t.tag) {
-    case 'nat': return 'nat'
-    case 'bool': return 'bool'
-    case 'null': return 'null'
+/** @returns a pretty version of the value `v`, suitable for debugging. */
+export function prettyValue (v: Value): string {
+  switch (v.tag) {
+    case 'num': return `${v.value}`
+    case 'bool': return v.value ? 'true' : 'false'
+    case 'closure': return `<closure>`
+    case 'prim': return `<prim ${v.name}>`
+    case 'null': return v.tag
+    case 'keyword': return v.value
+    case 'object': {
+      let ret = '(obj'
+      for (const [str, ele] of v.value) {
+        ret += ` ${str} ${prettyValue(ele)}`
+      }
+      ret += ` proto:${prettyValue(v.proto)}`
+      ret += ')'
+      return ret
+    }
+  }
+}
+/** @returns a pretty version of the statement `s`. */
+export function prettyStmt (s: Stmt): string {
+  switch (s.tag) {
+    case 'define': return `(define ${s.id} ${prettyExp(s.exp)})`
+    case 'print': return `(print ${prettyExp(s.exp)})`
   }
 }
 
-/***** Evaluator **************************************************************/
-
-/**
- * @returns the value that expression `e` evaluates to.
- */
-export function evaluate (e: Exp): Value {
-  switch (e.tag) {
-    case 'zahl':
-      return e
-    case 'bool':
-      return e
-    case 'null':
-      return e
-    case 'nicht': {
-      const v = evaluate(e)
-      if (v.tag === 'bool') {
-        return bool(!v.value)
-      } else {
-        throw new Error(`Typ fehler: nicht erwartet ein booleschen Wert, aber ein ${v.tag} gegeben war.`)
-      }
-    }
-    case 'plus': {
-      const v1 = evaluate(e.e1)
-      const v2 = evaluate(e.e2)
-      if (v1.tag === 'zahl' && v2.tag === 'zahl') {
-        return zahl(v1.value + v2.value)
-      } else {
-        throw new Error(`Typ fehler: plus erwartet zwei Zahlen aber ein ${v1.tag} und ein ${v2.tag} gegeben war.`)
-      }
-    }
-    case 'gleich': {
-      const v1 = evaluate(e.e1)
-      const v2 = evaluate(e.e2)
-      if (v1.tag !== v2.tag){
-        throw new Error(`Typ fehler: gleich erwartet ahnliches Typen, aber ein ${v1.tag} und ein ${v2.tag} gegeben war`)
-      } else {
-        return bool(v1 === v2)
-      }
-    }
-    case 'und': {
-      const v1 = evaluate(e.e1)
-      const v2 = evaluate(e.e2)
-      if (v1.tag === 'bool' && v2.tag === 'bool') {
-        return bool(v1.value && v2.value)
-      } else {
-        throw new Error(`Typ fehler: && erwartet zwei booleschen Werten aber ein ${v1.tag} und ein ${v2.tag} gegeben war.`)
-      }
-    }
-    case 'sonst': {
-      const v1 = evaluate(e.e1)
-      const v2 = evaluate(e.e2)
-      if (v1.tag === 'bool' && v2.tag === 'bool') {
-        return bool(v1.value || v2.value)
-      } else {
-        throw new Error(`Typ fehler: || erwartet zwei booleschen Werten aber ein ${v1.tag} und ein ${v2.tag} gegeben war.`)
-      }
-    }
-    case 'ob': {
-      const v = evaluate(e.e1)
-      if (v.tag === 'bool') {
-        return v.value ? evaluate(e.e2) : evaluate(e.e3)
-      } else {
-        throw new Error(`Typ fehler: ob erwartet ein booleschen Wert, aber ein ${v.tag} gegeben war.`)
-      }
-    }
-    case 'feld': {
-      const w = e.e2[1]
-      let ret: w.tag[]
-      for (let i = 0; i < e.e2.length; i++){
-        if (w.tag !== e.e2[i].tag){
-          throw new Error(`Typ fehler: ob erwartet ${w.tag}, aber ein ${e.e2[i].tag} gegeben war.`)
-        }
-        ret.push(evaluate(e.e2[i]))
-    }
-  }
+/** @returns a pretty version of the program `p`. */
+export function prettyProg (p: Prog): string {
+  return p.map(prettyStmt).join('\n')
 }
