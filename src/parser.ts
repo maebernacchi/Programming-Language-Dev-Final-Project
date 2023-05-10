@@ -11,7 +11,7 @@ export function translateExp (e: S.Sexp): L.Exp {
     } else if (/\d+$/.test(e.value)) {
       return L.num(parseInt(e.value))
     } else if (e.value === 'null') {
-      return L.nole
+      return L.nichts
     } else { // otherwise it is variable or keyword
       return (e.value[0] === ':') ? L.keyword(e.value) : L.evar(e.value)
     }
@@ -36,7 +36,7 @@ export function translateExp (e: S.Sexp): L.Exp {
       if (args.length !== 3) {
         throw new Error(`Parse error: 'if' expects 3 arguments but ${args.length} were given`)
       } else {
-        return L.ife(translateExp(args[0]), translateExp(args[1]), translateExp(args[2]))
+        return L.obs(translateExp(args[0]), translateExp(args[1]), translateExp(args[2]))
       }
     } else {
       return L.app(translateExp(head), args.map(translateExp))
@@ -58,7 +58,7 @@ export function translateStmt (e: S.Sexp): L.Stmt {
       } else if (args[0].tag !== 'atom') {
         throw new Error("Parse error: 'define' expects its first argument to be an identifier")
       } else {
-        return L.sdefine(args[0].value, translateExp(args[1]))
+        return L.sdefinieren(args[0].value, translateExp(args[1]))
       }
     } else if (head.value === 'print') {
       if (args.length !== 1) {

@@ -11,44 +11,44 @@
 
 // Expressions
 
-export type Exp = Var | Num | Bool | Lam | App | If | Nole | Keyword | Valwrap
+export type Exp = Var | Num | Bool | Lam | App | Ob | Nichts | Schlüssel | Wertwick
 export type Var = { tag: 'var', value: string }
 export type Num = { tag: 'num', value: number }
 export type Bool = { tag: 'bool', value: boolean }
 export type Lam = { tag: 'lam', params: string[], body: Exp }
 export type App = { tag: 'app', head: Exp, args: Exp[] }
-export type If = { tag: 'if', e1: Exp, e2: Exp, e3: Exp }
-export type Nole = { tag: 'null' }
-export type Keyword = { tag: 'keyword', value: string }
-export type Valwrap = { tag: 'valwrap', value: Value }
+export type Ob = { tag: 'ob', e1: Exp, e2: Exp, e3: Exp }
+export type Nichts = { tag: 'null' }
+export type Schlüssel = { tag: 'schlüssel', value: string }
+export type Wertwick = { tag: 'wertwick', value: Value }
 
 export const evar = (value: string): Var => ({ tag: 'var', value })
 export const num = (value: number): Num => ({ tag: 'num', value })
 export const bool = (value: boolean): Bool => ({ tag: 'bool', value })
 export const lam = (params: string[], body: Exp): Lam => ({ tag: 'lam', params, body })
 export const app = (head: Exp, args: Exp[]): App => ({ tag: 'app', head, args })
-export const ife = (e1: Exp, e2: Exp, e3: Exp): If => ({ tag: 'if', e1, e2, e3 })
-export const nole: Nole = ({ tag: 'null' })
-export const keyword = (value: string): Keyword => ({ tag: 'keyword', value })
-export const valwrap = (value: Value): Valwrap => ({ tag: 'valwrap', value })
+export const obs = (e1: Exp, e2: Exp, e3: Exp): Ob => ({ tag: 'ob', e1, e2, e3 })
+export const nichts: Nichts = ({ tag: 'null' })
+export const keyword = (value: string): Schlüssel => ({ tag: 'schlüssel', value })
+export const valwrap = (value: Value): Wertwick => ({ tag: 'wertwick', value })
 
-export type Value = Num | Bool | Prim | Closure | Nole | Keyword | VObject
+export type Value = Num | Bool | Prim | Schluss | Nichts | Schlüssel | VObjekt
 export type Prim = { tag: 'prim', name: string, fn: (args: Value[]) => Value }
-export type Closure = { tag: 'closure', params: string[], body: Exp, env: Env }
-export type VObject = { tag: 'object', proto: VObject | Nole, value: Map<string, Value> }
+export type Schluss = { tag: 'schluss', params: string[], body: Exp, env: Env }
+export type VObjekt = { tag: 'objekt', proto: VObjekt | Nichts, value: Map<string, Value> }
 
 export const prim = (name: string, fn: (args: Value[]) => Value): Prim => ({ tag: 'prim', name, fn })
-export const closure = (params: string[], body: Exp, env: Env): Closure => ({ tag: 'closure', params, body, env })
-export const vobject = (proto: VObject | Nole, value: Map<string, Value>): VObject => ({ tag: 'object', proto, value })
+export const schluss = (params: string[], body: Exp, env: Env): Schluss => ({ tag: 'schluss', params, body, env })
+export const vobjekt = (proto: VObjekt | Nichts, value: Map<string, Value>): VObjekt => ({ tag: 'objekt', proto, value })
 
 // Statements
 
-export type Stmt = SDefine | SPrint
-export type SDefine = { tag: 'define', id: string, exp: Exp }
-export type SPrint = { tag: 'print', exp: Exp }
+export type Stmt = SDefinieren | SDruck
+export type SDefinieren = { tag: 'definieren', id: string, exp: Exp }
+export type SDruck = { tag: 'druck', exp: Exp }
 
-export const sdefine = (id: string, exp: Exp): SDefine => ({ tag: 'define', id, exp })
-export const sprint = (exp: Exp): SPrint => ({ tag: 'print', exp })
+export const sdefinieren = (id: string, exp: Exp): SDefinieren => ({ tag: 'definieren', id, exp })
+export const sprint = (exp: Exp): SDruck => ({ tag: 'druck', exp })
 
 // Programs
 
@@ -122,10 +122,10 @@ export function prettyExp (e: Exp): string {
     case 'bool': return e.value ? 'true' : 'false'
     case 'lam': return `(lambda ${e.params.join(' ')} ${prettyExp(e.body)})`
     case 'app': return `(${prettyExp(e.head)} ${e.args.map(prettyExp).join(' ')})`
-    case 'if': return `(if ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
+    case 'ob': return `(ob ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
     case 'null': return e.tag
-    case 'keyword': return `${e.value}`
-    case 'valwrap': return `${prettyValue(e.value)}`
+    case 'schlüssel': return `${e.value}`
+    case 'wertwick': return `${prettyValue(e.value)}`
   }
 }
 
@@ -134,11 +134,11 @@ export function prettyValue (v: Value): string {
   switch (v.tag) {
     case 'num': return `${v.value}`
     case 'bool': return v.value ? 'true' : 'false'
-    case 'closure': return `<closure>`
+    case 'schluss': return `<schluss>`
     case 'prim': return `<prim ${v.name}>`
     case 'null': return v.tag
-    case 'keyword': return v.value
-    case 'object': {
+    case 'schlüssel': return v.value
+    case 'objekt': {
       let ret = '(obj'
       for (const [str, ele] of v.value) {
         ret += ` ${str} ${prettyValue(ele)}`
@@ -152,8 +152,8 @@ export function prettyValue (v: Value): string {
 /** @returns a pretty version of the statement `s`. */
 export function prettyStmt (s: Stmt): string {
   switch (s.tag) {
-    case 'define': return `(define ${s.id} ${prettyExp(s.exp)})`
-    case 'print': return `(print ${prettyExp(s.exp)})`
+    case 'definieren': return `(definieren ${s.id} ${prettyExp(s.exp)})`
+    case 'druck': return `(druck ${prettyExp(s.exp)})`
   }
 }
 

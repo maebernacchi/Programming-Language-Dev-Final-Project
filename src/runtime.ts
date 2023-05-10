@@ -70,15 +70,15 @@ function objPrim (args: L.Value[]): L.Value {
     for (let i = 0; i < args.length; i += 2) {
       const e1 = args[i]
       const e2 = args[i + 1]
-      if (e1.tag !== 'keyword') {
-        throwUnexpectedError('obj', 'keyword', i, e1.tag)
+      if (e1.tag !== 'schlüssel') {
+        throwUnexpectedError('obj', 'schlüssel', i, e1.tag)
       } else if (!vals.includes(args[i + 1].tag)) {
         throwUnexpectedError('obj', 'Value', i + 1, e2.tag)
       } else {
         ret.set(e1.value, e2)
       }
     }
-    return L.vobject(L.nole, ret)
+    return L.vobjekt(L.nichts, ret)
   }
 }
 
@@ -88,16 +88,16 @@ function fiePrim (args: L.Value[]): L.Value {
   } else {
     let o = args[0]
     const f = args[1]
-    if (o.tag !== 'object') {
+    if (o.tag !== 'objekt') {
       throwUnexpectedError('field', 'obj', 0, o.tag)
-    } else if (f.tag !== 'keyword') {
+    } else if (f.tag !== 'schlüssel') {
       throwUnexpectedError('field', 'keyword', 1, f.tag)
     } else if (o.value.has(f.value)) {
       return o.value.get(f.value)!
     } else {
       while (o.proto.tag !== 'null') {
         o = o.proto
-        if (o.tag === 'object' && o.value.has(f.value)) {
+        if (o.tag === 'objekt' && o.value.has(f.value)) {
           return o.value.get(f.value)!
         }
       }

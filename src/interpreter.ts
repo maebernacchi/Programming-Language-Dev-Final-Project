@@ -20,11 +20,11 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
     case 'bool':
       return e
     case 'lam':
-      return L.closure(e.params, e.body, env)
+      return L.schluss(e.params, e.body, env)
     case 'app': {
       const head = evaluate(env, e.head)
       const args = e.args.map(arg => evaluate(env, arg))
-      if (head.tag === 'closure') {
+      if (head.tag === 'schluss') {
         if (args.length !== head.params.length) {
           throw new Error(`Runtime error: expected ${head.params.length} arguments, but found ${args.length}`)
         } else {
@@ -32,7 +32,7 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
         }
       } else if (head.tag === 'prim') {
         return head.fn(args)
-      } else if (head.tag === 'object') {
+      } else if (head.tag === 'objekt') {
         if (args.length % 2 !== 0) {
           throw new Error(`Runtime error: fuck you, can't count (interpreter.ts line 34)`)
         }
@@ -40,18 +40,18 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
         for (let i = 0; i < args.length; i += 2) {
           const e1 = args[i]
           const e2 = args[i + 1]
-          if (e1.tag !== 'keyword') {
+          if (e1.tag !== 'schlüssel') {
             throw new Error(`Runtime error: left side of pairs in obj must be keywords`)
           } else {
             ret.set(e1.value, e2)
           }
         }
-        return L.vobject(L.nole, ret)
+        return L.vobjekt(L.nichts, ret)
       } else {
         throw new Error(`Runtime error: expected closure or primitive or obj, but found '${L.prettyExp(head)}'`)
       }
     }
-    case 'if': {
+    case 'ob': {
       const v = evaluate(env, e.e1)
       if (v.tag === 'bool') {
         return v.value ? evaluate(env, e.e2) : evaluate(env, e.e3)
@@ -62,10 +62,10 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
     case 'null': {
       return e
     }
-    case 'keyword': {
+    case 'schlüssel': {
       return e
     }
-    case 'valwrap': {
+    case 'wertwick': {
       return e.value
     }
   }
@@ -76,12 +76,12 @@ export function execute (env: L.Env, prog: L.Prog): Output {
   const output: Output = []
   for (const s of prog) {
     switch (s.tag) {
-      case 'define': {
+      case 'definieren': {
         const v = evaluate(env, s.exp)
         env.set(s.id, v)
         break
       }
-      case 'print': {
+      case 'druck': {
         const v = evaluate(env, s.exp)
         output.push(L.prettyValue(v))
         break
