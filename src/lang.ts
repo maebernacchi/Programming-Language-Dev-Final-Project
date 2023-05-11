@@ -74,13 +74,13 @@ export class Env {
     } else if (this.outer !== undefined) {
       return this.outer.get(x)
     } else {
-      throw new Error(`Runtime error: unbound variable '${x}'`)
+      throw new Error(`Laufzeit Fehler: ungebunden Variable '${x}'`)
     }
   }
 
   set (x: string, v: Value): void {
     if (this.bindings.has(x)) {
-      throw new Error(`Runtime error: redefinition of variable '${x}'`)
+      throw new Error(`Laufzeit Fehler: Neudefinition von Variable '${x}'`)
     } else {
       this.bindings.set(x, v)
     }
@@ -93,7 +93,7 @@ export class Env {
     } else if (this.outer !== undefined) {
       return this.outer.update(x, v)
     } else {
-      throw new Error(`Runtime error: unbound variable '${x}'`)
+      throw new Error(`Laufzeit Fehler: ungebunden Variable '${x}'`)
     }
   }
 
@@ -119,7 +119,7 @@ export function prettyExp (e: Exp): string {
   switch (e.tag) {
     case 'var': return `${e.value}`
     case 'num': return `${e.value}`
-    case 'bool': return e.value ? 'true' : 'false'
+    case 'bool': return e.value ? 'richtig' : 'falsch'
     case 'lam': return `(lambda ${e.params.join(' ')} ${prettyExp(e.body)})`
     case 'app': return `(${prettyExp(e.head)} ${e.args.map(prettyExp).join(' ')})`
     case 'ob': return `(ob ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
@@ -133,7 +133,7 @@ export function prettyExp (e: Exp): string {
 export function prettyValue (v: Value): string {
   switch (v.tag) {
     case 'num': return `${v.value}`
-    case 'bool': return v.value ? 'true' : 'false'
+    case 'bool': return v.value ? 'richtig' : 'falsch'
     case 'schluss': return `<schluss>`
     case 'prim': return `<prim ${v.name}>`
     case 'null': return v.tag

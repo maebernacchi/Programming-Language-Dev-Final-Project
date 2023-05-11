@@ -5,11 +5,11 @@
 import * as L from './lang'
 
 function throwArityError (fn: string, expected: number, found: number): never {
-  throw new Error(`Runtime error: '${fn}' expects ${expected} argument(s) but ${found} were given`)
+  throw new Error(`Laufzeit Fehler: '${fn}' erwartet ${expected} Argument(e) aber ${found} war gegeben`)
 }
 
 function throwUnexpectedError (fn: string, expected: string, pos: number, found: string): never {
-  throw new Error(`Type error: primitive '${fn}' expected ${expected} in position ${pos} but a ${found} was given`)
+  throw new Error(`Typ Fehler: Primitive '${fn}' erwartet ${expected} in Lage ${pos} aber ein ${found} war gegeben`)
 }
 
 function checkBinaryArithOp (op: string, args: L.Value[]): [number, number] {
@@ -19,9 +19,9 @@ function checkBinaryArithOp (op: string, args: L.Value[]): [number, number] {
     const v1 = args[0]
     const v2 = args[1]
     if (v1.tag !== 'num') {
-      throwUnexpectedError('+', 'number', 1, v1.tag)
+      throwUnexpectedError('+', 'nummer', 1, v1.tag)
     } else if (v2.tag !== 'num') {
-      throwUnexpectedError('+', 'number', 2, v2.tag)
+      throwUnexpectedError('+', 'nummer', 2, v2.tag)
     } else {
       return [v1.value, v2.value]
     }
@@ -50,11 +50,11 @@ function divPrim (args: L.Value[]): L.Value {
 
 function zeroPrim (args: L.Value[]): L.Value {
   if (args.length !== 1) {
-    throwArityError('zero?', 1, args.length)
+    throwArityError('null?', 1, args.length)
   } else {
     const v = args[0]
     if (v.tag !== 'num') {
-      throwUnexpectedError('zero?', 'number', 1, v.tag)
+      throwUnexpectedError('null?', 'nummer', 1, v.tag)
     } else {
       return L.bool(v.value === 0)
     }
@@ -63,7 +63,7 @@ function zeroPrim (args: L.Value[]): L.Value {
 
 function objPrim (args: L.Value[]): L.Value {
   if (args.length % 2 !== 0) {
-    throw new Error(`Runtime error: obj, expects an even number of arguments but ${args.length} were given`)
+    throw new Error(`Laufzeit Fehler: Objekt, erwartet ein gerade nummber Argumente ${args.length} war gegeben`)
   } else {
     const vals: string[] = ['num', 'bool', 'prim', 'closure', 'keyword']
     const ret: Map<string, L.Value> = new Map([])
@@ -101,7 +101,7 @@ function fiePrim (args: L.Value[]): L.Value {
           return o.value.get(f.value)!
         }
       }
-      throw new Error(`${f.value} does not exist in ${o} or its prototypes.`)
+      throw new Error(`${f.value} existiert nicht in ${o} oder ihrer Prototypen.`)
     }
   }
 }
@@ -112,7 +112,7 @@ export function makeInitialEnv (): L.Env {
     ['-', L.prim('-', subPrim)],
     ['*', L.prim('*', timesPrim)],
     ['/', L.prim('/', divPrim)],
-    ['zero?', L.prim('zero?', zeroPrim)],
+    ['null?', L.prim('null?', zeroPrim)],
     ['obj', L.prim('obj', objPrim)],
     ['field', L.prim('field', fiePrim)]
   ]))

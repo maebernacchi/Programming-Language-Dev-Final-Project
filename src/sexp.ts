@@ -20,7 +20,7 @@ export class Lexer {
   /** @returns the next character of the input. */
   private peek (): string {
     if (this.empty()) {
-      throw new Error('Lexer error: unexpected end of input while lexing.')
+      throw new Error('Lexer Fehler: unerwartete Ende von Einsatz als lexing.')
     } else {
       return this.src[this.pos]
     }
@@ -119,7 +119,7 @@ class Parser {
   /** @returns the next token of the input. */
   peek (): Tok {
     if (this.empty()) {
-      throw new Error('Parser error: unexpected end of input while parsing.')
+      throw new Error('Parser Fehler: unerwartete Ende von Einsatz als parsing.')
     } else {
       return this.toks[this.pos]
     }
@@ -140,7 +140,7 @@ class Parser {
       // N.B., move past the '('
       this.advance()
       if (this.empty()) {
-        throw new Error('Parser error: unexpected end of input while parsing.')
+        throw new Error('Parser Fehler: unerwartete Ende von Einsatz als parsing.')
       }
       const ret: Sexp[] = []
       while (this.peek() !== ')') {
@@ -150,7 +150,7 @@ class Parser {
       this.advance()
       return slist(ret)
     } else if (head === ')') {
-      throw new Error('Parser error: unexpected close parentheses encountered.')
+      throw new Error('Parser Fehler: unerwartet gesperrt Klammer traf.')
     } else {
       return atom(this.chomp())
     }
@@ -173,7 +173,7 @@ export function parse1 (src: string): Sexp {
   if (parser.empty()) {
     return result
   } else {
-    throw new Error(`Parse error: input not completely consumed: '${parser.peek()}'`)
+    throw new Error(`Parse Fehler: Einsatz nich völlig konsumierte: '${parser.peek()}'`)
   }
 }
 
@@ -184,6 +184,6 @@ export function parse (src: string): Sexp[] {
   if (parser.empty()) {
     return result
   } else {
-    throw new Error(`Parse error: input not completely consumed: '${parser.peek()}'`)
+    throw new Error(`Parse Fehler: Einsatz nich völlig konsumierte: '${parser.peek()}'`)
   }
 }

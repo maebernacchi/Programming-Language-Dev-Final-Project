@@ -12,7 +12,7 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
       if (env.has(e.value)) {
         return env.get(e.value)
       } else {
-        throw new Error(`Runtime error: unbound variable '${e.value}'`)
+        throw new Error(`Laufzeit Fehler: ungebunden Variable '${e.value}'`)
       }
     }
     case 'num':
@@ -26,7 +26,7 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
       const args = e.args.map(arg => evaluate(env, arg))
       if (head.tag === 'schluss') {
         if (args.length !== head.params.length) {
-          throw new Error(`Runtime error: expected ${head.params.length} arguments, but found ${args.length}`)
+          throw new Error(`Laufzeit Fehler: erwartet ${head.params.length} Auseinandersetzungen, aber gat ${args.length} gefunden`)
         } else {
           return evaluate(head.env.extend(head.params, args), head.body)
         }
@@ -34,21 +34,21 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
         return head.fn(args)
       } else if (head.tag === 'objekt') {
         if (args.length % 2 !== 0) {
-          throw new Error(`Runtime error: fuck you, can't count (interpreter.ts line 34)`)
+          throw new Error(`Laufzeit Fehler: es gibt nicht genug Auseinandersetzungen (interpreter.ts Linie 34)`)
         }
         const ret: Map<string, L.Value> = new Map([])
         for (let i = 0; i < args.length; i += 2) {
           const e1 = args[i]
           const e2 = args[i + 1]
           if (e1.tag !== 'schlüssel') {
-            throw new Error(`Runtime error: left side of pairs in obj must be keywords`)
+            throw new Error(`Laufzeit Fehler: linkse Seite von Paare in Objekt müsst Schlüssel sind.`)
           } else {
             ret.set(e1.value, e2)
           }
         }
         return L.vobjekt(L.nichts, ret)
       } else {
-        throw new Error(`Runtime error: expected closure or primitive or obj, but found '${L.prettyExp(head)}'`)
+        throw new Error(`Laufzeit Fehler: geschätzt Schluss, Primitive oder Objekt, aber hat '${L.prettyExp(head)}' gefunden`)
       }
     }
     case 'ob': {
@@ -56,7 +56,7 @@ export function evaluate (env: L.Env, e: L.Exp): L.Value {
       if (v.tag === 'bool') {
         return v.value ? evaluate(env, e.e2) : evaluate(env, e.e3)
       } else {
-        throw new Error(`Type error: 'if' expects a boolean in guard position but a ${v.tag} was given.`)
+        throw new Error(`Typ fehler: 'ob' erwartet ein Boolean in Schutzlage aber ein ${v.tag} war gegeben.`)
       }
     }
     case 'null': {
