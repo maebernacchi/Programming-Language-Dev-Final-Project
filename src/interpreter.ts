@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/consistent-generic-constructors */
 /* eslint-disable @typescript-eslint/quotes */
 import * as L from './lang'
+/* sensible parsing lab and building from there.
+focus on core class stuff
+lab 6 has static typechecking stuff */
 
 /** The output of our programs: a list of strings that our program printed. */
 export type Output = string[]

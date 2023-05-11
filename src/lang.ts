@@ -1,3 +1,4 @@
+/* eslint-disable no-trailing-spaces */
 /* eslint-disable @typescript-eslint/quotes */
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
@@ -7,6 +8,18 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable spaced-comment */
 
+/*
++ R: A working pure, Scheme-like interpreter with a basic class construct (specifies constructor, fields, methods)
+    that allows for inheritence using a prototype-based model.
+
++ M: Mutation of variables and object fields along with appropriate language constructs, e.g., statements or a
+    begin-style expression, to support them appearing within function definitions.
+
++ E: An additional major language feature beyond classes and mutation, e.g., static typechecking for the language.
+
+Plan: implement a static typechecker and then that should be all I have to worry about, as lambdas will be able
+to hold smaller functions within themselves.
+*/
 /***** Abstract Syntax Tree ***************************************************/
 
 // Expressions
