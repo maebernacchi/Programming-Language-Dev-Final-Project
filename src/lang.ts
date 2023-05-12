@@ -127,14 +127,14 @@ export class Env {
     ret.bindings = new Map(xs.map((x, i) => [x, vs[i]]))
     return ret
   }
-}
-export type Ctx = Map<string, Value>
 
-/** @returns a copy of `ctx` with the additional binding `x:t` */
-export function extendCtx (x: string, t: Value, ctx: Ctx): Ctx {
-  const ret = new Map(ctx.entries())
-  ret.set(x, t)
-  return ret
+  /** @returns a copy of `ctx` with the additional binding `x:t` */
+  extendCtx (x: string, t: Value, ctx: Env): Env {
+    let ret = new Env()
+    ret = new Map(ctx.bindings)
+    ret.set(x, t)
+    return ret
+  }
 }
 
 /***** Pretty-printer *********************************************************/
@@ -274,4 +274,24 @@ export function execute (env: Env, prog: Prog): Output {
     }
   }
   return output
+}
+
+/** @returns true iff t1 and t2 are equivalent types */
+export function typEquals (t1: Value, t2: Value): boolean {
+  // N.B., this could be collapsed into a single boolean expression. But we
+  // maintain this more verbose form because you will want to follow this
+  // pattern of (a) check the tags and (b) recursively check sub-components
+  // if/when you add additional types to the language.
+  if (t1.tag === 'num' && t2.tag === 'num') {
+    return true
+  } else if (t1.tag === 'bool' && t2.tag === 'bool') {
+    return true
+  } else if (t1.tag === 'arr' && t2.tag === 'arr') {
+    return typEquals(t1.output, t2.output) &&
+      t1.inputs.length === t2.inputs.length &&
+      t1.inputs.every((t, i) => typEquals(t, t2.inputs[i])) 
+    // TODO: add an equality case for record types here!
+  } else {
+    return false
+  }
 }
