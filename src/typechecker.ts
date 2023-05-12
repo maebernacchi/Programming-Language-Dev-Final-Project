@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-/*
+
 import * as L from './lang'
 
 function expectedTypeMsg (expected: string, pos: number, fn: string, found: string): string {
   return `Type error: Expected ${expected} in position ${pos} of ${fn} but found ${found}`
 }
-*/
+
 /** @return the type of expression `e` */
-/*
-export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
+
+export function typecheck (ctx: L.Env, e: L.Exp): L.Value {
   switch (e.tag) {
     case 'var': {
       if (ctx.has(e.value)) {
@@ -18,12 +19,12 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
       }
     }
     case 'num':
-      return L.tynat
+      return e
     case 'bool':
-      return L.tybool
+      return e
     case 'lam': {
-      const outTy = typecheck(L.extendCtx(e.param, e.typ, ctx), e.body)
-      return L.tyarr([e.typ], outTy)
+      const outTy = typecheck(L.extend(e., e.typ), e.body)
+      return L.tyarr([e.body], outTy)
     }
     case 'app': {
       const thead = typecheck(ctx, e.head)
@@ -99,5 +100,3 @@ export function checkWF (ctx: L.Ctx, prog: L.Prog): void {
     }
   })
 }
-
-*/

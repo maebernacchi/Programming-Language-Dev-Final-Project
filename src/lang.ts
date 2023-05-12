@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/consistent-generic-constructors */
 /* eslint-disable no-trailing-spaces */
 /* eslint-disable @typescript-eslint/quotes */
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
@@ -45,11 +47,13 @@ export const nichts: Nichts = ({ tag: 'null' })
 export const keyword = (value: string): Schlüssel => ({ tag: 'schlüssel', value })
 export const valwrap = (value: Value): Wertwick => ({ tag: 'wertwick', value })
 
-export type Value = Num | Bool | Prim | Schluss | Nichts | Schlüssel | VObjekt
+export type Value = Num | Bool | Prim | Schluss | Nichts | Schlüssel | VObjekt | TyArr
+export type TyArr = { tag: 'arr', inputs: Value[], output: Value }
 export type Prim = { tag: 'prim', name: string, fn: (args: Value[]) => Value }
 export type Schluss = { tag: 'schluss', params: string[], body: Exp, env: Env }
 export type VObjekt = { tag: 'objekt', proto: VObjekt | Nichts, value: Map<string, Value> }
 
+export const tyarr = (inputs: Value[], output: Value): TyArr => ({ tag: 'arr', inputs, output })
 export const prim = (name: string, fn: (args: Value[]) => Value): Prim => ({ tag: 'prim', name, fn })
 export const schluss = (params: string[], body: Exp, env: Env): Schluss => ({ tag: 'schluss', params, body, env })
 export const vobjekt = (proto: VObjekt | Nichts, value: Map<string, Value>): VObjekt => ({ tag: 'objekt', proto, value })
@@ -124,6 +128,14 @@ export class Env {
     return ret
   }
 }
+export type Ctx = Map<string, Value>
+
+/** @returns a copy of `ctx` with the additional binding `x:t` */
+export function extendCtx (x: string, t: Value, ctx: Ctx): Ctx {
+  const ret = new Map(ctx.entries())
+  ret.set(x, t)
+  return ret
+}
 
 /***** Pretty-printer *********************************************************/
 
@@ -151,6 +163,7 @@ export function prettyValue (v: Value): string {
     case 'prim': return `<prim ${v.name}>`
     case 'null': return v.tag
     case 'schlüssel': return v.value
+    case 'arr': return `(-> ${v.inputs.map(prettyValue).join(' ')} ${prettyValue(v.output)})`
     case 'objekt': {
       let ret = '(obj'
       for (const [str, ele] of v.value) {
@@ -173,4 +186,92 @@ export function prettyStmt (s: Stmt): string {
 /** @returns a pretty version of the program `p`. */
 export function prettyProg (p: Prog): string {
   return p.map(prettyStmt).join('\n')
+}
+
+export type Output = string[]
+
+/** @returns the value that expression `e` evaluates to. */
+export function evaluate (env: Env, e: Exp): Value {
+  switch (e.tag) {
+    case 'var': {
+      if (env.has(e.value)) {
+        return env.get(e.value)
+      } else {
+        throw new Error(`Laufzeit Fehler: ungebunden Variable '${e.value}'`)
+      }
+    }
+    case 'num':
+      return e
+    case 'bool':
+      return e
+    case 'lam':
+      return schluss(e.params, e.body, env)
+    case 'app': {
+      const head = evaluate(env, e.head)
+      const args = e.args.map(arg => evaluate(env, arg))
+      if (head.tag === 'schluss') {
+        if (args.length !== head.params.length) {
+          throw new Error(`Laufzeit Fehler: erwartet ${head.params.length} Auseinandersetzungen, aber gat ${args.length} gefunden`)
+        } else {
+          return evaluate(head.env.extend(head.params, args), head.body)
+        }
+      } else if (head.tag === 'prim') {
+        return head.fn(args)
+      } else if (head.tag === 'objekt') {
+        if (args.length % 2 !== 0) {
+          throw new Error(`Laufzeit Fehler: es gibt nicht genug Auseinandersetzungen (interpreter.ts Linie 34)`)
+        }
+        const ret: Map<string, Value> = new Map([])
+        for (let i = 0; i < args.length; i += 2) {
+          const e1 = args[i]
+          const e2 = args[i + 1]
+          if (e1.tag !== 'schlüssel') {
+            throw new Error(`Laufzeit Fehler: linkse Seite von Paare in Objekt müsst Schlüssel sind.`)
+          } else {
+            ret.set(e1.value, e2)
+          }
+        }
+        return vobjekt(nichts, ret)
+      } else {
+        throw new Error(`Laufzeit Fehler: geschätzt Schluss, Primitive oder Objekt, aber hat '${prettyValue(head)}' gefunden`)
+      }
+    }
+    case 'ob': {
+      const v = evaluate(env, e.e1)
+      if (v.tag === 'bool') {
+        return v.value ? evaluate(env, e.e2) : evaluate(env, e.e3)
+      } else {
+        throw new Error(`Typ fehler: 'ob' erwartet ein Boolean in Schutzlage aber ein ${v.tag} war gegeben.`)
+      }
+    }
+    case 'null': {
+      return e
+    }
+    case 'schlüssel': {
+      return e
+    }
+    case 'wertwick': {
+      return e.value
+    }
+  }
+}
+
+/** @returns the result of executing program `prog` under environment `env` */
+export function execute (env: Env, prog: Prog): Output {
+  const output: Output = []
+  for (const s of prog) {
+    switch (s.tag) {
+      case 'definieren': {
+        const v = evaluate(env, s.exp)
+        env.set(s.id, v)
+        break
+      }
+      case 'druck': {
+        const v = evaluate(env, s.exp)
+        output.push(prettyValue(v))
+        break
+      }
+    }
+  }
+  return output
 }
