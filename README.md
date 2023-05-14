@@ -1,10 +1,13 @@
 # Language Design Proposal
 
-Similar to C, this language is implemented with the ability to do basic calculations. The main goal of this program is not so much for the purpose of creating an in-depth, highly complicated language, but rather one that is accessible to those who don't have access to a proper educational environment in the computer science field. Currently this language is extremely primitive, but it is continuously being edited and made better. 
+Similar to C, this language is implemented with the ability to do basic calculations. The main goal of this program is not so much for the purpose of creating an in-depth, highly complicated language, but rather one that is accessible to those who don't have access to a proper educational environment in the computer science field. Currently this language is extremely primitive and scheme-like, but it is continuously being edited and made better. 
+
+Right now there's an error with the typechecker which will require a lot of additional function creation, but that's something that I will get to within the next few weeks. 
 
 ### Syntax
 
 ```
+This syntax has been copied from Lab 6 of CSC-312
 x, f are identifiers; n is a number; b is a boolean
 
 t ::= Nat | Bool | (-> t1 t2) | (Rec f1 t1 ... fk tk)
