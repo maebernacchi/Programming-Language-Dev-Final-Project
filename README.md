@@ -1,6 +1,93 @@
 # Language Design Proposal
 
-Similar to C, this language is implemented with the ability to do basic calculations. The main goal of this program is not so much for the purpose of creating an in-depth, highly complicated language, but rather one that is accessible to those who don't have access to a proper educational environment in the computer science field. Currently this language is extremely primitive, but it is continuously being edited and made better. 
+Similar to C, this language is implemented with the ability to do basic calculations. The main goal of this program is not so much for the purpose of creating an in-depth, highly complicated language, but rather one that is accessible to those who don't have access to a proper educational environment in the computer science field. Currently this language is extremely primitive and scheme-like, but it is continuously being edited and made better. 
+
+Right now there's an error with the typechecker which will require a lot of additional function creation, but that's something that I will get to within the next few weeks. 
+
+### Syntax
+
+```
+This syntax has been copied from Lab 6 of CSC-312
+x, f are identifiers; n is a number; b is a boolean
+
+t ::= Nat | Bool | (-> t1 t2) | (Rec f1 t1 ... fk tk)
+
+e ::= x | n | b
+    | (lambda x t e)
+    | (e1 .. ek)
+    | (if e1 e2 e3)
+    | (re`c f1 e1 ... fk ek)
+    | (field e f)
+
+v ::= n | b | (lambda x t e) | (rec f1 v1 ... fk vk)
+
+s ::= (define x e) | (display e)
+
+prog ::= s1 ... sk
+```
+
+### Dynamic Semantics
+
+```
+σ is the runtime environemnt
+
+x:v ∈ σ
+---------
+σ; x ⇓ v
+
+σ; e1 ⇓ true    σ; e2 ⇓ v
+-------------------------
+σ; (if e1 e2 e3) ⇓ v
+
+σ; e1 ⇓ false    σ; e2 ⇓ v
+--------------------------
+σ; (if e1 e2 e3) ⇓ v
+
+σ; e1 ⇓ (lambda (x t) e)
+σ; e2 ⇓ v
+σ; [v/x] e ⇓ v'
+---------------------
+σ; (e1 e2) ⇓ v'
+
+σ; e ⇓ (f1 v1 ... f v ... fk vk)
+--------------------------------
+σ; (field e f) ⇓ v
+```
+
+### Typechecking
+
+```
+Γ is the typechecking context
+
+x:t ∈ Γ
+---------
+Γ ⊢ x : t
+
+-----------
+Γ ⊢ n : Nat
+
+-----------
+Γ ⊢ b : Bool
+
+x:t1, Γ ⊢ e : t2
+--------------------------------
+Γ ⊢ (lambda x t1 e) : (-> t1 t2)
+
+Γ ⊢ e1 : (-> t1 t2)
+Γ ⊢ e2 : t1
+-------------------
+Γ ⊢ (e1 e2) : t2
+
+Γ ⊢ e1 : t1
+...
+Γ ⊢ ek : tk
+----------------------------------------------------
+Γ ⊢ (rec f1 e1 ... fk ek) : (Record f1 t1 ... fk tk)
+
+Γ ⊢ e : (Record f1 t1 ... f t ... fk tk)
+----------------------------------------
+Γ ⊢ (field e f) : t
+```
 
 # Typescript Template
 
