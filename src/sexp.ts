@@ -59,7 +59,7 @@ export class Lexer {
    * Consumes leading whitespace in the input up until the next non-whitespace
    * character.
    */
-  whitespace () {
+  whitespace (): void {
     while (!this.empty() && /\s/.test(this.peek())) { this.advance() }
   }
 
@@ -107,7 +107,7 @@ class Parser {
   private pos: number
   private toks: Tok[]
 
-  constructor(toks: Tok[]) {
+  constructor (toks: Tok[]) {
     this.pos = 0
     this.toks = toks
   }
@@ -118,7 +118,7 @@ class Parser {
   }
 
   /** @returns the next token of the input. */
-  peek () { 
+  peek (): string {
     if (this.empty()) {
       throw new Error('Parser error: unexpected end of input while parsing.')
     } else {

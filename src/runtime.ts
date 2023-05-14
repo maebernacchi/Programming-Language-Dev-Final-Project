@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/prefer-ts-expect-error */
 /* eslint-disable @typescript-eslint/consistent-generic-constructors */
 /* eslint-disable @typescript-eslint/object-curly-spacing */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
@@ -60,13 +62,14 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
   const v1 = evaluate(e.e1, viro)
   let v2: L.Value = L.num(0)
   let v3: L.Value = L.num(0)
-  if (argnums >= 2)  // @ts-ignore
+  if (argnums >= 2) { // @ts-ignore
     v2 = evaluate(e.e2, viro)
+  }
   if (argnums === 3) { // @ts-ignore
     v3 = evaluate(e.e3, viro)
   }
-  
-  switch(e.tag){
+
+  switch (e.tag) {
     case 'not': {
       if (v1.tag === 'bool') {
         return L.bool(!v1.value)
@@ -98,11 +101,6 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
         throw new Error(`Type error: || expects two booleans but a ${v1.tag} and ${v2.tag} was given.`)
       }
     }
-    case 'app': {
-      if (v1.tag === 'lambda') {
-        return evaluate(L.substitute(v2, v1.value, v1.e1), viro)
-      }
-    }
     case 'if': {
       if (v1.tag === 'bool') {
         return v1.value ? v2 : v3
@@ -115,19 +113,18 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
   }
 }
 
-
 /** @returns the result of executing program `prog` */
-export function execute(env: L.Env, prog: L.Prog): Output {
+export function execute (env: L.Env, prog: L.Prog): Output {
   const stringouts: string[] = []
   for (let i = 0; i < prog.length; i++) {
     const e = prog[i]
     if (e.tag === 'define') {
       env = L.extendEnv(e.id, evaluate(e.exp, env), env)
     } else if (e.tag === 'print') {
-      let printed: L.Value = evaluate(e.exp, env)
+      const printed: L.Value = evaluate(e.exp, env)
       stringouts.push(String(printed.value))
     } else {
-      throw new Error(`This is not a statement dumdum`)
+      throw new Error('This is not a statement dumdum')
     }
   }
   return stringouts

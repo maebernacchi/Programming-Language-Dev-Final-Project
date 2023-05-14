@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/consistent-generic-constructors */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import * as S from './sexp'
 import * as L from './lang'
 
@@ -31,7 +34,7 @@ const operatorMap: Map<string, OpEntry> =
   ])
 
 /** @returns the expression parsed from the given s-expression. */
-export function translateExp(e: S.Sexp): L.Exp {
+export function translateExp (e: S.Sexp): L.Exp {
   if (e.tag === 'atom') {
     if (e.value === 'true') {
       return L.bool(true)
@@ -58,13 +61,13 @@ export function translateExp(e: S.Sexp): L.Exp {
   }
 }
 
-export function translateStmt(e: S.Sexp): L.Stmt {
+export function translateStmt (e: S.Sexp): L.Stmt {
   if (e.tag === 'atom') {
     throw new Error(`Parse error: an atom cannot be a statement: '${e.value}'`)
   } else {
     const head = e.exps[0]
     const args = e.exps.slice(1)
-    if (head.tag !=='atom') {
+    if (head.tag !== 'atom') {
       throw new Error('Parse error: identifier expected at head of operator/form')
     } else if (head.value === 'define') {
       if (args.length !== 2) {
@@ -82,9 +85,9 @@ export function translateStmt(e: S.Sexp): L.Stmt {
   }
 }
 
-export function translateProg(es: S.Sexp[]): L.Prog {
+export function translateProg (es: S.Sexp[]): L.Prog {
   const ret: L.Stmt[] = []
-  for(let i = 0; i < es.length; i++) {
+  for (let i = 0; i < es.length; i++) {
     ret.push(translateStmt(es[i]))
   }
   return ret
