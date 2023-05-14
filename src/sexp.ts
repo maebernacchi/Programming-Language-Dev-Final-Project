@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* eslint-disable spaced-comment */
+/* eslint-disable @typescript-eslint/prefer-readonly */
 /** A `Tok` is a semantically meaningful chunk of text. */
 export type Tok = string
 
 /** A `Lexer` statefully transforms an input string into a list of tokens. */
 export class Lexer {
   private pos: number
-  private readonly src: string
+  private src: string
 
   /** Constructs a new `Lexer` from the given `src` string. */
   constructor (src: string) {
@@ -20,7 +23,7 @@ export class Lexer {
   /** @returns the next character of the input. */
   private peek (): string {
     if (this.empty()) {
-      throw new Error('Lexer Fehler: unerwartete Ende von Einsatz als lexing.')
+      throw new Error('Lexer error: unexpected end of input while lexing.')
     } else {
       return this.src[this.pos]
     }
@@ -29,28 +32,25 @@ export class Lexer {
   /** Advances the tokenizer forward one character. */
   private advance (): void { this.pos += 1 }
 
-  /**
-   * Retrieves the current character and advances the tokenizer forward one
-   * character.
-   */
-  private chomp (): string {
-    return this.src[this.pos++]
-  }
-
   /** @return the next `Tok` from this lexer's source string. */
   private lex1 (): Tok {
     const leader = this.peek()
-    if (leader === '(' || leader === ')') {
-      const ret = this.chomp()
-      this.whitespace()
-      return ret
+    if (leader === '(') {
+      this.advance()
+      return '('
+    } else if (leader === ')') {
+      this.advance()
+      return ')'
     } else {
       // N.B., identifiers are non-parentheses chunks of text
-      let chk = this.chomp()
-      while (!this.empty() && /\S/.test(this.peek()) && this.peek() !== '(' && this.peek() !== ')') {
-        chk += this.chomp()
+      let chk = ''
+      let cur = leader
+      while (/\S/.test(cur) && cur !== '(' && cur !== ')') {
+        chk += cur
+        this.advance()
+        if (this.empty()) break
+        cur = this.peek()
       }
-      this.whitespace()
       return chk
     }
   }
@@ -59,7 +59,7 @@ export class Lexer {
    * Consumes leading whitespace in the input up until the next non-whitespace
    * character.
    */
-  whitespace (): void {
+  whitespace () {
     while (!this.empty() && /\s/.test(this.peek())) { this.advance() }
   }
 
@@ -69,22 +69,23 @@ export class Lexer {
     this.whitespace()
     while (!this.empty()) {
       ret.push(this.lex1())
+      this.whitespace()
     }
     return ret
   }
 }
 
-/** *** S-expression Datatypes *************************************************/
+/***** S-expression Datatypes *************************************************/
 
 /** An `Atom` is a non-delineating chunk of text. */
-export interface Atom { tag: 'atom', value: string }
+export type Atom = { tag: 'atom', value: string }
 const atom = (value: string): Sexp => ({ tag: 'atom', value })
 
 /** A `SList` is a list of s-expressions. */
-export interface SList { tag: 'slist', exps: Sexp [] }
+export type SList = { tag: 'slist', exps: Sexp [] }
 const slist = (exps: Sexp[]): Sexp => ({ tag: 'slist', exps })
 
-/** An s-expression is either an `Atom` of a list of s-expressions, a `SList`. */
+/** An s-expression is either an `Atom` or a list of s-expressions, a `SList`. */
 export type Sexp = Atom | SList
 
 /** @returns a string representation of `Sexp` `e`. */
@@ -96,7 +97,7 @@ export function sexpToString (e: Sexp): string {
   }
 }
 
-/** *** S-expression Parsing ***************************************************/
+/***** S-expression Parsing ***************************************************/
 
 /**
  * A `Parser` statefully transforms a list of tokens into a s-expression
@@ -104,9 +105,9 @@ export function sexpToString (e: Sexp): string {
  */
 class Parser {
   private pos: number
-  private readonly toks: Tok[]
+  private toks: Tok[]
 
-  constructor (toks: Tok[]) {
+  constructor(toks: Tok[]) {
     this.pos = 0
     this.toks = toks
   }
@@ -117,9 +118,9 @@ class Parser {
   }
 
   /** @returns the next token of the input. */
-  peek (): Tok {
+  peek () { 
     if (this.empty()) {
-      throw new Error('Parser Fehler: unerwartete Ende von Einsatz als parsing.')
+      throw new Error('Parser error: unexpected end of input while parsing.')
     } else {
       return this.toks[this.pos]
     }
@@ -128,11 +129,6 @@ class Parser {
   /** Advances the parser one token forward. */
   advance (): void { this.pos += 1 }
 
-  /** Returns the current token and advances the parser forward. */
-  chomp (): Tok {
-    return this.toks[this.pos++]
-  }
-
   /** @returns the next `Sexp` parsed from the input. */
   parse1 (): Sexp {
     const head = this.peek()
@@ -140,7 +136,7 @@ class Parser {
       // N.B., move past the '('
       this.advance()
       if (this.empty()) {
-        throw new Error('Parser Fehler: unerwartete Ende von Einsatz als parsing.')
+        throw new Error('Parser error: unexpected end of input while parsing.')
       }
       const ret: Sexp[] = []
       while (this.peek() !== ')') {
@@ -150,9 +146,11 @@ class Parser {
       this.advance()
       return slist(ret)
     } else if (head === ')') {
-      throw new Error('Parser Fehler: unerwartet gesperrt Klammer traf.')
+      throw new Error('Parser error: unexpected close parentheses encountered.')
     } else {
-      return atom(this.chomp())
+      // N.B., move past the head
+      this.advance()
+      return atom(head)
     }
   }
 
@@ -173,7 +171,7 @@ export function parse1 (src: string): Sexp {
   if (parser.empty()) {
     return result
   } else {
-    throw new Error(`Parse Fehler: Einsatz nich völlig konsumierte: '${parser.peek()}'`)
+    throw new Error(`Parse error: input not completely consumed: '${parser.peek()}'`)
   }
 }
 
@@ -184,6 +182,6 @@ export function parse (src: string): Sexp[] {
   if (parser.empty()) {
     return result
   } else {
-    throw new Error(`Parse Fehler: Einsatz nich völlig konsumierte: '${parser.peek()}'`)
+    throw new Error(`Parse error: input not completely consumed: '${parser.peek()}'`)
   }
 }

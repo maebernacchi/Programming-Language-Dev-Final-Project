@@ -1,8 +1,4 @@
-/* eslint-disable no-trailing-spaces */
 /* eslint-disable @typescript-eslint/space-before-blocks */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import * as L from './lang'
 
 function expectedTypeMsg (expected: string, pos: number, fn: string, found: string): string {
@@ -10,44 +6,62 @@ function expectedTypeMsg (expected: string, pos: number, fn: string, found: stri
 }
 
 /** @return the type of expression `e` */
-
-export function typecheck (ctx: L.Env, e: L.Exp): L.Value {
+export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
   switch (e.tag) {
-    case 'var': {
-      if (ctx.has(e.value)) {
-        return ctx.get(e.value)!
-      } else {
-        throw new Error(`Type error: unbound variable: ${e.value}`)
-      }
-    }
+    case 'var':
+      throw new Error('TODO: implement typecheck(var)!')
     case 'num':
-      return e
+      return L.tynat
     case 'bool':
-      return e
-    case 'lam': {
-      const outTy = []
-      for (let i = 0; i < e.params.length; i++){ 
-        outTy.push(typecheck(ctx.extend1(e.params[i], e.body), e.body))
-      }
-      return L.tyarr(outTy, e.body)
-    }
-    case 'app': {
-      const thead = typecheck(ctx, e.head)
-      const targs = e.args.map(arg => typecheck(ctx, arg))
-      if (thead.tag !== 'arr') {
-        throw new Error(`Type error: expected arrow type but found '${L.prettyValue(thead)}'`)
-      } else if (thead.inputs.length !== targs.length) {
-        throw new Error(`Type error: expected ${thead.inputs.length} arguments but found ${targs.length}`)
+      return L.tybool
+    case 'not': {
+      const t = typecheck(ctx, e.e1)
+      if (t.tag !== 'bool') {
+        throw new Error(expectedTypeMsg('bool', 1, 'not', t.tag))
       } else {
-        thead.inputs.forEach((t, i) => {
-          if (!L.typEquals(t, targs[i])) {
-            throw new Error(`Type error: expected ${L.prettyValue(t)} but found ${L.prettyValue(targs[i])}`)
-          }
-        })
-        return thead.output
+        return L.tybool
       }
     }
-    case 'ob': {
+    case 'plus': {
+      const t1 = typecheck(ctx, e.e1)
+      const t2 = typecheck(ctx, e.e2)
+      if (t1.tag !== 'nat') {
+        throw new Error(expectedTypeMsg('nat', 1, 'plus', t1.tag))
+      } else if (t2.tag !== 'nat') {
+        throw new Error(expectedTypeMsg('nat', 2, 'plus', t2.tag))
+      }
+      return L.tynat
+    }
+    case 'eq': {
+      const _t1 = typecheck(ctx, e.e1)
+      const _t2 = typecheck(ctx, e.e2)
+      if (_t1.tag === _t2.tag){
+        return L.tybool
+      } else {
+        throw new Error(expectedTypeMsg(_t1.tag, 1, 'eq', _t2.tag))
+      }
+    }
+    case 'and': {
+      const t1 = typecheck(ctx, e.e1)
+      const t2 = typecheck(ctx, e.e2)
+      if (t1.tag !== 'bool') {
+        throw new Error(expectedTypeMsg('bool', 1, 'and', t1.tag))
+      } else if (t2.tag !== 'bool') {
+        throw new Error(expectedTypeMsg('bool', 2, 'and', t2.tag))
+      }
+      return L.tybool
+    }
+    case 'or': {
+      const t1 = typecheck(ctx, e.e1)
+      const t2 = typecheck(ctx, e.e2)
+      if (t1.tag !== 'bool') {
+        throw new Error(expectedTypeMsg('bool', 1, 'or', t1.tag))
+      } else if (t2.tag !== 'bool') {
+        throw new Error(expectedTypeMsg('bool', 2, 'or', t2.tag))
+      }
+      return L.tybool
+    }
+    case 'if': {
       const t1 = typecheck(ctx, e.e1)
       const t2 = typecheck(ctx, e.e2)
       const t3 = typecheck(ctx, e.e3)
@@ -58,24 +72,12 @@ export function typecheck (ctx: L.Env, e: L.Exp): L.Value {
       }
       return t3
     }
-    default:
-      console.log(expectedTypeMsg('Type', 0, 'typecheck', 'invalid'))
-      return L.num(0)
+    default: throw new Error('something is wrong with typechecker')
   }
 }
 
-export function checkWF (env: L.Env, prog: L.Prog): void {
-  prog.forEach((s) => {
-    switch (s.tag) {
-      case 'definieren': {
-        const t = typecheck(env, s.exp)
-        env.extendCtx(s.id, t, env)
-        break
-      }
-      case 'druck': {
-        typecheck(env, s.exp)
-        break
-      }
-    }
-  })
+/*
+export function checkWF(ctx: L.Ctx, prog: L.Prog) {
+  // TODO: implement me!
 }
+*/
