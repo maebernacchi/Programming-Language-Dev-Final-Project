@@ -1,3 +1,5 @@
+/* eslint-disable no-trailing-spaces */
+/* eslint-disable @typescript-eslint/space-before-blocks */
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -23,8 +25,11 @@ export function typecheck (ctx: L.Env, e: L.Exp): L.Value {
     case 'bool':
       return e
     case 'lam': {
-      const outTy = typecheck(L.extend(e.params, e.body), e.body)
-      return L.tyarr([e.body], outTy)
+      const outTy = []
+      for (let i = 0; i < e.params.length; i++){ 
+        outTy.push(typecheck(ctx.extend1(e.params[i], e.body), e.body))
+      }
+      return L.tyarr(outTy, e.body)
     }
     case 'app': {
       const thead = typecheck(ctx, e.head)
@@ -64,7 +69,7 @@ export function checkWF (env: L.Env, prog: L.Prog): void {
     switch (s.tag) {
       case 'definieren': {
         const t = typecheck(env, s.exp)
-        L.extendCtx(s.id, t, env)
+        env.extendCtx(s.id, t, env)
         break
       }
       case 'druck': {

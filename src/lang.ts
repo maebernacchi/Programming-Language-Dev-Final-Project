@@ -75,7 +75,7 @@ export type Prog = Stmt[]
 
 export class Env {
   private outer?: Env
-  private bindings: Map<string, Value>
+  private bindings: Map<string, Value> 
 
   constructor (bindings?: Map<string, Value>) {
     this.bindings = bindings || new Map()
@@ -130,8 +130,9 @@ export class Env {
 
   /** @returns a copy of `ctx` with the additional binding `x:t` */
   extendCtx (x: string, t: Value, ctx: Env): Env {
-    let ret = new Env()
-    ret = new Map(ctx.bindings)
+    const ret = new Env()
+    ret.bindings = ctx.bindings
+    //ret = new Map(ctx.bindings)
     ret.set(x, t)
     return ret
   }
