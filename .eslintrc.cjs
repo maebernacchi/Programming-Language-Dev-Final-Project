@@ -11,6 +11,6 @@ module.exports = {
     project: './tsconfig.json'
   },
   rules: {
-    'consistent-type-definitions': 0
+    'consistent-type-definitions': 'type'
   }
 }
