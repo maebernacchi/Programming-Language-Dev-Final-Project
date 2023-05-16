@@ -14,10 +14,10 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
       return L.tynat
     case 'bool':
       return L.tybool
-    case 'not': {
+    case 'nicht': {
       const t = typecheck(ctx, e.e1)
       if (t.tag !== 'bool') {
-        throw new Error(expectedTypeMsg('bool', 1, 'not', t.tag))
+        throw new Error(expectedTypeMsg('bool', 1, 'nicht', t.tag))
       } else {
         return L.tybool
       }
@@ -32,43 +32,43 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
       }
       return L.tynat
     }
-    case 'eq': {
+    case 'gleich': {
       const _t1 = typecheck(ctx, e.e1)
       const _t2 = typecheck(ctx, e.e2)
       if (_t1.tag === _t2.tag){
         return L.tybool
       } else {
-        throw new Error(expectedTypeMsg(_t1.tag, 1, 'eq', _t2.tag))
+        throw new Error(expectedTypeMsg(_t1.tag, 1, 'gleich', _t2.tag))
       }
     }
-    case 'and': {
+    case 'und': {
       const t1 = typecheck(ctx, e.e1)
       const t2 = typecheck(ctx, e.e2)
       if (t1.tag !== 'bool') {
-        throw new Error(expectedTypeMsg('bool', 1, 'and', t1.tag))
+        throw new Error(expectedTypeMsg('bool', 1, 'und', t1.tag))
       } else if (t2.tag !== 'bool') {
-        throw new Error(expectedTypeMsg('bool', 2, 'and', t2.tag))
+        throw new Error(expectedTypeMsg('bool', 2, 'und', t2.tag))
       }
       return L.tybool
     }
-    case 'or': {
+    case 'oder': {
       const t1 = typecheck(ctx, e.e1)
       const t2 = typecheck(ctx, e.e2)
       if (t1.tag !== 'bool') {
-        throw new Error(expectedTypeMsg('bool', 1, 'or', t1.tag))
+        throw new Error(expectedTypeMsg('bool', 1, 'oder', t1.tag))
       } else if (t2.tag !== 'bool') {
-        throw new Error(expectedTypeMsg('bool', 2, 'or', t2.tag))
+        throw new Error(expectedTypeMsg('bool', 2, 'oder', t2.tag))
       }
       return L.tybool
     }
-    case 'if': {
+    case 'falls': {
       const t1 = typecheck(ctx, e.e1)
       const t2 = typecheck(ctx, e.e2)
       const t3 = typecheck(ctx, e.e3)
       if (t1.tag !== 'bool') {
-        throw new Error(expectedTypeMsg('bool', 1, 'if', t1.tag))
+        throw new Error(expectedTypeMsg('bool', 1, 'falls', t1.tag))
       } else if (t2.tag !== t3.tag) {
-        throw new Error(expectedTypeMsg(t2.tag, 3, 'if', t3.tag))
+        throw new Error(expectedTypeMsg(t2.tag, 3, 'falls', t3.tag))
       }
       return t3
     }

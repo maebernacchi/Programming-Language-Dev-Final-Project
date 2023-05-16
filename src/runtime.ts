@@ -29,12 +29,12 @@ type OpEntry = { arity: number, ctor: (_args: L.Exp[]) => L.Exp }
 
 const operatorMap: Map<string, OpEntry> =
   new Map([
-    ['not', { arity: 1, ctor: wrap1(L.not) }],
+    ['nicht', { arity: 1, ctor: wrap1(L.nicht) }],
     ['plus', { arity: 2, ctor: wrap2(L.plus) }],
-    ['eq', { arity: 2, ctor: wrap2(L.eq) }],
-    ['and', { arity: 2, ctor: wrap2(L.and) }],
-    ['or', { arity: 2, ctor: wrap2(L.or) }],
-    ['if', { arity: 3, ctor: wrap3(L.ife)}]
+    ['gleich', { arity: 2, ctor: wrap2(L.gleich) }],
+    ['und', { arity: 2, ctor: wrap2(L.und) }],
+    ['oder', { arity: 2, ctor: wrap2(L.oder) }],
+    ['falls', { arity: 3, ctor: wrap3(L.falls)}]
   ])
 
 /** @returns the value that expression `e` evaluates to. */
@@ -70,7 +70,7 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
   }
 
   switch (e.tag) {
-    case 'not': {
+    case 'nicht': {
       if (v1.tag === 'bool') {
         return L.bool(!v1.value)
       } else {
@@ -84,24 +84,24 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
         throw new Error(`Type error: plus expects two numbers but a ${v1.tag} and ${v2.tag} was given.`)
       }
     }
-    case 'eq': {
+    case 'gleich': {
       return L.bool(v1.value === v2.value)
     }
-    case 'and': {
+    case 'und': {
       if (v1.tag === 'bool' && v2.tag === 'bool') {
         return L.bool(v1.value && v2.value)
       } else {
         throw new Error(`Type error: && expects two booleans but a ${v1.tag} and ${v2.tag} was given.`)
       }
     }
-    case 'or': {
+    case 'oder': {
       if (v1.tag === 'bool' && v2.tag === 'bool') {
         return L.bool(v1.value || v2.value)
       } else {
         throw new Error(`Type error: || expects two booleans but a ${v1.tag} and ${v2.tag} was given.`)
       }
     }
-    case 'if': {
+    case 'falls': {
       if (v1.tag === 'bool') {
         return v1.value ? v2 : v3
       } else {

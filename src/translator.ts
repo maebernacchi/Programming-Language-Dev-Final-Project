@@ -25,12 +25,12 @@ type OpEntry = { arity: number, ctor: (_args: L.Exp[]) => L.Exp }
 /** A mapping from function symbols to AST constructors for those functions */
 const operatorMap: Map<string, OpEntry> =
   new Map([
-    ['not', { arity: 1, ctor: wrap1(L.not) }],
+    ['nicht', { arity: 1, ctor: wrap1(L.nicht) }],
     ['+', { arity: 2, ctor: wrap2(L.plus) }],
-    ['=', { arity: 2, ctor: wrap2(L.eq) }],
-    ['and', { arity: 2, ctor: wrap2(L.and) }],
-    ['or', { arity: 2, ctor: wrap2(L.or) }],
-    ['if', { arity: 3, ctor: wrap3(L.ife) }]
+    ['=', { arity: 2, ctor: wrap2(L.gleich) }],
+    ['und', { arity: 2, ctor: wrap2(L.und) }],
+    ['oder', { arity: 2, ctor: wrap2(L.oder) }],
+    ['falls', { arity: 3, ctor: wrap3(L.falls) }]
   ])
 
 /** @returns the expression parsed from the given s-expression. */

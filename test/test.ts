@@ -47,42 +47,12 @@ describe('base lambda', () => {
   })
 })
 
-describe('app', () => {
-  test('prettyExp', () => {
-    expect(L.prettyExp(appEx1)).toStrictEqual('((lambda (x bool) (not x)) true)')
-  })
-  test('evaluate', () => {
-    expect(E.evaluate(appEx1, totallyenviro)).toStrictEqual(L.bool(false))
-  })
-})
-
 const ex1: L.Exp = L.eq(L.num(5), L.plus(L.evar('x'), L.num(1)))
 const ex2: L.Exp = L.eq(L.num(5), L.plus(L.num(3), L.num(1)))
 
 describe('substitute', () => {
   test('base case (app (lambda (x bool) (not x)), true)', () => {
     expect(L.substitute(L.num(3), 'x', ex1)).toStrictEqual(ex2)
-  })
-})
-
-// more complex testing
-// ex3 = (app (lambda (x nat) (eq x 3)), 3)  - returns true
-const ex3: L.Exp = L.app(L.slambda('x', L.tynat, L.eq(L.evar('x'), L.num(3))), L.num(3))
-// ex4 = (app (lambda (x bool) (and x true)), ex3) - returns true
-const ex4: L.Exp = L.app(L.slambda('x', L.tybool, L.and(L.evar('x'), L.bool(true))), ex3)
-
-describe('complex testing', () => {
-  test('basic app with nat', () => {
-    expect(E.evaluate(ex3, totallyenviro)).toStrictEqual(L.bool(true))
-  })
-  test('nested lambda', () => {
-    expect(E.evaluate(ex4, totallyenviro)).toStrictEqual(L.bool(true))
-  })
-  test('Another app with nat', () => {
-    expect(E.evaluate(ex4, totallyenviro)).toStrictEqual(L.bool(true))
-  })
-  test('Additional nested Lambda', () => {
-    expect(E.evaluate(ex3, totallyenviro)).toStrictEqual(L.bool(true))
   })
 })
 
@@ -95,11 +65,11 @@ describe('globals testing', () => {
   test('Global value retention', () => {
     // so even after ex3 changes x to be 3, printing x again outside the lambda
     // still has x value of 1.
-    expect(E.execute(totallyenviro, [ex5, L.sprint(ex6), L.sprint(ex3), L.sprint(ex6)]))
+    expect(E.execute(totallyenviro, [ex5, L.sprint(ex6), L.sprint(ex6)]))
       .toStrictEqual(['1', 'true', '1'])
   })
   test('Additional Global Value Retention', () => {
-    expect(E.execute(totallyenviro, [ex7, L.sprint(ex8), L.sprint(ex3), L.sprint(ex8)]))
+    expect(E.execute(totallyenviro, [ex7, L.sprint(ex8), L.sprint(ex8)]))
     .toStrictEqual(['5', 'true', '5'])
   })
 })

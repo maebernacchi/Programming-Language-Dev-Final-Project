@@ -12,28 +12,28 @@ export const tybool: Typ = ({ tag: 'bool' })
 export const tyarr = (t1: Typ, t2: Typ): Typ => ({ tag: 'arr', t1, t2 })
 
 // Expressions
-export type Exp = Var | Num | Bool | Not | Plus | Eq | And | Or | If | SLambda
+export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda
 
 export type Var = { tag: 'var', value: string }
 export type Num = { tag: 'num', value: number }
 export type Bool = { tag: 'bool', value: boolean }
-export type Not = { tag: 'not', e1: Exp }
+export type Nicht = { tag: 'nicht', e1: Exp }
 export type Plus = { tag: 'plus', e1: Exp, e2: Exp }
-export type Eq = { tag: 'eq', e1: Exp, e2: Exp }
-export type And = { tag: 'and', e1: Exp, e2: Exp }
-export type Or = { tag: 'or', e1: Exp, e2: Exp }
-export type If = { tag: 'if', e1: Exp, e2: Exp, e3: Exp }
+export type Gleich = { tag: 'gleich', e1: Exp, e2: Exp }
+export type Und = { tag: 'und', e1: Exp, e2: Exp }
+export type Oder = { tag: 'oder', e1: Exp, e2: Exp }
+export type Falls = { tag: 'falls', e1: Exp, e2: Exp, e3: Exp }
 export type SLambda = { tag: 'lambda', value: string, t: Typ, e1: Exp }
 
 export const evar = (value: string): Var => ({ tag: 'var', value })
 export const num = (value: number): Num => ({ tag: 'num', value })
 export const bool = (value: boolean): Bool => ({ tag: 'bool', value })
-export const not = (e1: Exp): Exp => ({ tag: 'not', e1 })
+export const nicht = (e1: Exp): Exp => ({ tag: 'nicht', e1 })
 export const plus = (e1: Exp, e2: Exp): Exp => ({ tag: 'plus', e1, e2 })
-export const eq = (e1: Exp, e2: Exp): Exp => ({ tag: 'eq', e1, e2 })
-export const and = (e1: Exp, e2: Exp): Exp => ({ tag: 'and', e1, e2 })
-export const or = (e1: Exp, e2: Exp): Exp => ({ tag: 'or', e1, e2 })
-export const ife = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'if', e1, e2, e3 })
+export const gleich = (e1: Exp, e2: Exp): Exp => ({ tag: 'gleich', e1, e2 })
+export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
+export const oder = (e1: Exp, e2: Exp): Exp => ({ tag: 'oder', e1, e2 })
+export const falls = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'falls', e1, e2, e3 })
 export const slambda = (value: string, t: Typ, e1: Exp): Exp => ({ tag: 'lambda', value, t, e1 })
 
 // Values
@@ -62,12 +62,12 @@ export function prettyExp (e: Exp): string {
     case 'var': return `${e.value}`
     case 'num': return `${e.value}`
     case 'bool': return e.value ? 'true' : 'false'
-    case 'not': return `(not ${prettyExp(e.e1)})`
+    case 'nicht': return `(nicht ${prettyExp(e.e1)})`
     case 'plus': return `(+ ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'eq': return `(= ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'and': return `(and ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'or': return `(or ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
-    case 'if': return `(if ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
+    case 'gleich': return `(= ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
+    case 'und': return `(und ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
+    case 'oder': return `(oder ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
+    case 'falls': return `(falls ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
     case 'lambda': return `(lambda (${e.value} ${e.t.tag}) ${prettyExp(e.e1)})`
   }
 }
@@ -141,12 +141,12 @@ export function substitute (v: Value, x: string, e: Exp): Exp {
     case 'num': return e
     case 'bool': return e
     case 'var': return (x === e.value) ? v : e
-    case 'not': return not(substitute(v, x, e.e1))
+    case 'nicht': return nicht(substitute(v, x, e.e1))
     case 'plus': return plus(substitute(v, x, e.e1), substitute(v, x, e.e2))
-    case 'eq': return eq(substitute(v, x, e.e1), substitute(v, x, e.e2))
-    case 'and': return and(substitute(v, x, e.e1), substitute(v, x, e.e2))
-    case 'or': return or(substitute(v, x, e.e1), substitute(v, x, e.e2))
-    case 'if': return ife(substitute(v, x, e.e1), substitute(v, x, e.e2), substitute(v, x, e.e3))
+    case 'gleich': return gleich(substitute(v, x, e.e1), substitute(v, x, e.e2))
+    case 'und': return und(substitute(v, x, e.e1), substitute(v, x, e.e2))
+    case 'oder': return oder(substitute(v, x, e.e1), substitute(v, x, e.e2))
+    case 'falls': return falls(substitute(v, x, e.e1), substitute(v, x, e.e2), substitute(v, x, e.e3))
     default: throw new Error('what did you break bro??? check substitute')
   }
 }
