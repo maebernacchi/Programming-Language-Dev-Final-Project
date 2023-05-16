@@ -124,6 +124,11 @@ export function execute (env: L.Env, prog: L.Prog): Output {
       const printed: L.Value = evaluate(e.exp, env)
       //@ts-ignore
       stringouts.push(String(printed.value))
+    } else if (e.tag === 'klasse'){
+      stringouts.push(e.tag + ' ')
+      for(let i = 0; i < e.exp.length; i++){
+        stringouts.push(L.prettyExp(evaluate(e.exp[i], env)) + ' ')
+      }
     } else {
       throw new Error('Es ist nicht ein Aussage.')
     }
