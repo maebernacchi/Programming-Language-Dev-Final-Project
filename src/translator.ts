@@ -47,40 +47,40 @@ export function translateExp (e: S.Sexp): L.Exp {
       return L.evar(e.value)
     }
   } else if (e.exps.length === 0) {
-    throw new Error('Parse error: empty expression list encountered')
+    throw new Error('Parse Fehler: leeres Ausdruck Liste getroffen.')
   } else {
     const head = e.exps[0]
     const args = e.exps.slice(1)
     if (head.tag !== 'atom') {
-      throw new Error('Parse error: identifier expected at head of operator/form')
+      throw new Error('Parse Fehler: Identifikator erwartet am Kopf von Anwender')
     } else if (operatorMap.has(head.value)) {
       return operatorMap.get(head.value)!.ctor(args.map(translateExp))
     } else {
-      throw new Error(`Parse error: invalid operator given '${head.value}'`)
+      throw new Error(`Parse Fehler: invalid Anwender gegeben '${head.value}'`)
     }
   }
 }
 
 export function translateStmt (e: S.Sexp): L.Stmt {
   if (e.tag === 'atom') {
-    throw new Error(`Parse error: an atom cannot be a statement: '${e.value}'`)
+    throw new Error(`Parse Fehler: ein atom nicht ein Aussage sind: '${e.value}'`)
   } else {
     const head = e.exps[0]
     const args = e.exps.slice(1)
     if (head.tag !== 'atom') {
-      throw new Error('Parse error: identifier expected at head of operator/form')
+      throw new Error('Parse Fehler: Identifikator erwartet am Kopf von Aunwender')
     } else if (head.value === 'define') {
       if (args.length !== 2) {
-        throw new Error(`Parse error: 'define' expects 2 argument but ${args.length} were given`)
+        throw new Error(`Parse Fehler: 'definieren' erwartet 2 argumente aber ${args.length} war gegeben`)
       } else if (args[0].tag !== 'atom') {
-        throw new Error("Parse error: 'define' expects its first argument to be an identifier")
+        throw new Error("Parse Fehler: 'definieren' erwartet seiner erste Argument ein Identifikator ist")
       } else {
-        return L.sdefine(args[0].value, translateExp(args[1]))
+        return L.sdefinieren(args[0].value, translateExp(args[1]))
       }
-    } else if (head.value === 'print') {
-      throw new Error(`Parse error: 'display' expects 1 argument but ${args.length} were given`)
+    } else if (head.value === 'druck') {
+      throw new Error(`Parse Fehler: 'druck' erwartet 1 argumente aber ${args.length} war gegeben`)
     } else {
-      return L.sprint(translateExp(args[0]))
+      return L.sdruck(translateExp(args[0]))
     }
   }
 }

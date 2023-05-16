@@ -3,13 +3,13 @@
 /***** Abstract Syntax Tree ***************************************************/
 
 // Types
-export type Typ = TyNat | TyBool | TyArr
+export type Typ = TyNat | TyBool | TyFeld
 export type TyNat = { tag: 'nat' }
 export type TyBool = { tag: 'bool' }
-export type TyArr = { tag: 'arr', t1: Typ, t2: Typ }
+export type TyFeld = { tag: 'feld', t1: Typ, t2: Typ }
 export const tynat: Typ = ({ tag: 'nat' })
 export const tybool: Typ = ({ tag: 'bool' })
-export const tyarr = (t1: Typ, t2: Typ): Typ => ({ tag: 'arr', t1, t2 })
+export const tyfeld = (t1: Typ, t2: Typ): Typ => ({ tag: 'feld', t1, t2 })
 
 // Expressions
 export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda
@@ -42,13 +42,13 @@ export type Value = Num | Bool | SLambda
 
 // Statements
 
-export type SDefine = { tag: 'define', id: string, exp: Exp }
-export const sdefine = (id: string, exp: Exp): Stmt => ({ tag: 'define', id, exp })
+export type SDefinieren = { tag: 'definieren', id: string, exp: Exp }
+export const sdefinieren = (id: string, exp: Exp): Stmt => ({ tag: 'definieren', id, exp })
 
-export type SPrint = { tag: 'print', exp: Exp }
-export const sprint = (exp: Exp): Stmt => ({ tag: 'print', exp })
+export type SDruck = { tag: 'druck', exp: Exp }
+export const sdruck = (exp: Exp): Stmt => ({ tag: 'druck', exp })
 
-export type Stmt = SDefine | SPrint
+export type Stmt = SDefinieren | SDruck
 
 // Programs
 
@@ -61,7 +61,7 @@ export function prettyExp (e: Exp): string {
   switch (e.tag) {
     case 'var': return `${e.value}`
     case 'num': return `${e.value}`
-    case 'bool': return e.value ? 'true' : 'false'
+    case 'bool': return e.value ? 'richtig' : 'falsch'
     case 'nicht': return `(nicht ${prettyExp(e.e1)})`
     case 'plus': return `(+ ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
     case 'gleich': return `(= ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
@@ -77,15 +77,15 @@ export function prettyTyp (t: Typ): string {
   switch (t.tag) {
     case 'nat': return 'nat'
     case 'bool': return 'bool'
-    case 'arr': return 'arr'
+    case 'feld': return 'feld'
   }
 }
 
 /** @returns a pretty version of the statement `s`. */
 export function prettyStmt (s: Stmt): string {
   switch (s.tag) {
-    case 'define': return `(define ${s.id} ${prettyExp(s.exp)})`
-    case 'print': return `(print ${prettyExp(s.exp)})`
+    case 'definieren': return `(definieren ${s.id} ${prettyExp(s.exp)})`
+    case 'druck': return `(druck ${prettyExp(s.exp)})`
   }
 }
 
@@ -101,7 +101,7 @@ export function typEquals (t1: Typ, t2: Typ): boolean {
     return true
   } else if (t1.tag === 'bool' && t2.tag === 'bool') {
     return true
-  } else if (t1.tag === 'arr' && t2.tag === 'arr') {
+  } else if (t1.tag === 'feld' && t2.tag === 'feld') {
     return typEquals(t1.t1, t2.t1) && typEquals(t1.t2, t2.t2)
   } else return false
 }

@@ -2,14 +2,14 @@
 import * as L from './lang'
 
 function expectedTypeMsg (expected: string, pos: number, fn: string, found: string): string {
-  return `Type error: Expected ${expected} in position ${pos} of ${fn} but found ${found}`
+  return `Typ Fehler: Erwartet ${expected} in Lage ${pos} von ${fn} aber hat ${found} gefunden.`
 }
 
 /** @return the type of expression `e` */
 export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
   switch (e.tag) {
     case 'var':
-      throw new Error('TODO: implement typecheck(var)!')
+      throw new Error('Var ist nur ein String, es hat kein Typ.')
     case 'num':
       return L.tynat
     case 'bool':
@@ -72,7 +72,7 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
       }
       return t3
     }
-    default: throw new Error('something is wrong with typechecker')
+    default: throw new Error('Es gibt ein problem mit typechecker')
   }
 }
 

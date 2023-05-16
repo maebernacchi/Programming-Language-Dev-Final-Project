@@ -27,13 +27,13 @@ describe('Lexer and Parser', () => {
 
 describe('execution', () => {
   test('"print" number', () => {
-    expect(E.execute(totallyenviro, [L.sprint(L.num(3))])).toStrictEqual(['3'])
+    expect(E.execute(totallyenviro, [L.sdruck(L.num(3))])).toStrictEqual(['3'])
   })
   test('define x = 5', () => {
-    expect(E.execute(totallyenviro, [L.sdefine('x', L.num(5))])).toStrictEqual([])
+    expect(E.execute(totallyenviro, [L.sdefinieren('x', L.num(5))])).toStrictEqual([])
   })
   test('define and print y = 7', () => {
-    expect(E.execute(totallyenviro, [L.sdefine('y', L.num(7)), L.sprint(L.evar('y'))])).toStrictEqual(['7'])
+    expect(E.execute(totallyenviro, [L.sdefinieren('y', L.num(7)), L.sdruck(L.evar('y'))])).toStrictEqual(['7'])
   })
 })
 
@@ -47,8 +47,8 @@ describe('base lambda', () => {
   })
 })
 
-const ex1: L.Exp = L.eq(L.num(5), L.plus(L.evar('x'), L.num(1)))
-const ex2: L.Exp = L.eq(L.num(5), L.plus(L.num(3), L.num(1)))
+const ex1: L.Exp = L.gleich(L.num(5), L.plus(L.evar('x'), L.num(1)))
+const ex2: L.Exp = L.gleich(L.num(5), L.plus(L.num(3), L.num(1)))
 
 describe('substitute', () => {
   test('base case (app (lambda (x bool) (not x)), true)', () => {
@@ -56,20 +56,20 @@ describe('substitute', () => {
   })
 })
 
-const ex5: L.Stmt = L.sdefine('x', L.num(1))
+const ex5: L.Stmt = L.sdefinieren('x', L.num(1))
 const ex6: L.Exp = L.evar('x')
-const ex7: L.Stmt = L.sdefine('y', L.num(5))
+const ex7: L.Stmt = L.sdefinieren('y', L.num(5))
 const ex8: L.Exp = L.evar('y')
 
 describe('globals testing', () => {
   test('Global value retention', () => {
     // so even after ex3 changes x to be 3, printing x again outside the lambda
     // still has x value of 1.
-    expect(E.execute(totallyenviro, [ex5, L.sprint(ex6), L.sprint(ex6)]))
+    expect(E.execute(totallyenviro, [ex5, L.sdruck(ex6), L.sdruck(ex6)]))
       .toStrictEqual(['1', 'true', '1'])
   })
   test('Additional Global Value Retention', () => {
-    expect(E.execute(totallyenviro, [ex7, L.sprint(ex8), L.sprint(ex8)]))
+    expect(E.execute(totallyenviro, [ex7, L.sdruck(ex8), L.sdruck(ex8)]))
     .toStrictEqual(['5', 'true', '5'])
   })
 })

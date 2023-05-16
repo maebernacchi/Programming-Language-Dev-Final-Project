@@ -46,7 +46,7 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
         // @ts-ignore
         return viro.get(e.value)
       } else {
-        throw new Error(`Variable error: No defined value for ${e.value}`)
+        throw new Error(`Variable fehler: Kein festgelegt Wert für ${e.value}`)
       }
     }
     case 'num':
@@ -74,14 +74,14 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
       if (v1.tag === 'bool') {
         return L.bool(!v1.value)
       } else {
-        throw new Error(`Type error: negation expects a boolean but a ${v1.tag} was given.`)
+        throw new Error(`Typ Fehler: nicht erwartet ein boolean aber ein ${v1.tag} war gegeben.`)
       }
     }
     case 'plus': {
       if (v1.tag === 'num' && v2.tag === 'num') {
         return L.num(v1.value + v2.value)
       } else {
-        throw new Error(`Type error: plus expects two numbers but a ${v1.tag} and ${v2.tag} was given.`)
+        throw new Error(`Typ Fehler: plus erwartet zwei Nummern, aber ${v1.tag} und ${v2.tag} war gegeben.`)
       }
     }
     case 'gleich': {
@@ -91,25 +91,25 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
       if (v1.tag === 'bool' && v2.tag === 'bool') {
         return L.bool(v1.value && v2.value)
       } else {
-        throw new Error(`Type error: && expects two booleans but a ${v1.tag} and ${v2.tag} was given.`)
+        throw new Error(`Typ Fehler: && erwartet zwei Booleans aber ein ${v1.tag} und ${v2.tag} war gegeben.`)
       }
     }
     case 'oder': {
       if (v1.tag === 'bool' && v2.tag === 'bool') {
         return L.bool(v1.value || v2.value)
       } else {
-        throw new Error(`Type error: || expects two booleans but a ${v1.tag} and ${v2.tag} was given.`)
+        throw new Error(`Typ Fehler: || erwartet zwei Booleans aber ein ${v1.tag} und ${v2.tag} war gegeben.`)
       }
     }
     case 'falls': {
       if (v1.tag === 'bool') {
         return v1.value ? v2 : v3
       } else {
-        throw new Error(`Type error: 'if' expects a boolean in guard position but a ${v1.tag} was given.`)
+        throw new Error(`Typ Fehler: 'falls' erwartet ein Boolean in Schutz-Lage aber ein ${v1.tag} war gegeben.`)
       }
     }
     default:
-      throw new Error('dunno bro')
+      throw new Error('Ich weiß nicht.')
   }
 }
 
@@ -118,13 +118,13 @@ export function execute (env: L.Env, prog: L.Prog): Output {
   const stringouts: string[] = []
   for (let i = 0; i < prog.length; i++) {
     const e = prog[i]
-    if (e.tag === 'define') {
+    if (e.tag === 'definieren') {
       env = L.extendEnv(e.id, evaluate(e.exp, env), env)
-    } else if (e.tag === 'print') {
+    } else if (e.tag === 'druck') {
       const printed: L.Value = evaluate(e.exp, env)
       stringouts.push(String(printed.value))
     } else {
-      throw new Error('This is not a statement dumdum')
+      throw new Error('Es ist nicht ein Aussage.')
     }
   }
   return stringouts
