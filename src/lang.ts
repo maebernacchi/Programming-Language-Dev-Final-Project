@@ -14,8 +14,7 @@ export const tyfeld = (inputs: Typ[], output: Typ): Typ => ({ tag: 'feld', input
 export const tyklasse = (name: string, content: Map<string, Typ>,): Typ => ({ tag: 'klasse', name, content})
 
 // Expressions
-export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda | Klasse
-
+export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda
 export type Var = { tag: 'var', value: string }
 export type Num = { tag: 'num', value: number }
 export type Bool = { tag: 'bool', value: boolean }
@@ -25,7 +24,6 @@ export type Gleich = { tag: 'gleich', e1: Exp, e2: Exp }
 export type Und = { tag: 'und', e1: Exp, e2: Exp }
 export type Oder = { tag: 'oder', e1: Exp, e2: Exp }
 export type Falls = { tag: 'falls', e1: Exp, e2: Exp, e3: Exp }
-export type Klasse = { tag: 'klasse', name: string, content: Map<string, Exp>}
 export type SLambda = { tag: 'lambda', value: string, t: Typ, e1: Exp }
 
 export const evar = (value: string): Var => ({ tag: 'var', value })
@@ -37,42 +35,24 @@ export const gleich = (e1: Exp, e2: Exp): Exp => ({ tag: 'gleich', e1, e2 })
 export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
 export const oder = (e1: Exp, e2: Exp): Exp => ({ tag: 'oder', e1, e2 })
 export const falls = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'falls', e1, e2, e3 })
-export const klasse = (name: string, content: Map<string, Exp>): Klasse => ({ tag: 'klasse', name, content})
 export const slambda = (value: string, t: Typ, e1: Exp): Exp => ({ tag: 'lambda', value, t, e1 })
 
 // Values
-export type Value = Num | Bool | SLambda | Klasse
+export type Value = Num | Bool | SLambda
 
 // Statements
-
+export type Stmt = SDefinieren | SDruck | SKlasse
 export type SDefinieren = { tag: 'definieren', id: string, exp: Exp }
-export const sdefinieren = (id: string, exp: Exp): Stmt => ({ tag: 'definieren', id, exp })
-
 export type SDruck = { tag: 'druck', exp: Exp }
+export type SKlasse = { tag: 'klasse', exp: Exp[]}
+export const sdefinieren = (id: string, exp: Exp): Stmt => ({ tag: 'definieren', id, exp })
 export const sdruck = (exp: Exp): Stmt => ({ tag: 'druck', exp })
-
-export type Stmt = SDefinieren | SDruck
+export const klasse = (exp: Exp[]): Stmt => ({ tag: 'klasse', exp})
 
 // Programs
-
 export type Prog = Stmt[]
 
 /***** Pretty-printer *********************************************************/
-/**@returns a pretty version of class*/
-export function prettyClass (e: Klasse): string {
-  let temp = ''
-  let x = 0
-  for( const [key, val] of e.content){
-    temp += e.name + ' '
-    temp += key + ' '
-    temp += prettyExp(val)
-    x++
-    if (x < e.content.size) {
-      temp += ' '
-    }
-  }
-  return 'not implemented'
-}
 
 /** @returns a pretty version of the expression `e`, suitable for debugging. */
 export function prettyExp (e: Exp): string {
@@ -87,7 +67,6 @@ export function prettyExp (e: Exp): string {
     case 'oder': return `(oder ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
     case 'falls': return `(falls ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
     case 'lambda': return `(lambda (${e.value} ${e.t.tag}) ${prettyExp(e.e1)})`
-    case 'klasse': return `(klasse (${e.tag} ${e.name} ${prettyClass(e)}))`
   }
 }
 
@@ -115,11 +94,23 @@ export function prettyTyp (t: Typ): string {
   }
 }
 
+/**@returns a pretty version of class*/
+export function prettyClass (e: SKlasse): string {
+  let temp = ''
+  for(let i = 0; i < e.exp.length; i++){
+    temp += e.exp[i] + ' '
+    temp += prettyExp(e.exp[i])
+    temp += ' '
+  }
+  return temp
+}
+
 /** @returns a pretty version of the statement `s`. */
 export function prettyStmt (s: Stmt): string {
   switch (s.tag) {
     case 'definieren': return `(definieren ${s.id} ${prettyExp(s.exp)})`
     case 'druck': return `(druck ${prettyExp(s.exp)})`
+    case 'klasse': return `(klasse ${prettyClass(s)})`
   }
 }
 

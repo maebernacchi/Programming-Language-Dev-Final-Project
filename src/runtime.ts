@@ -56,13 +56,6 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
     case 'lambda':
       return e
   }
-
-  if(e.tag === 'klasse'){
-      for (let [key, val] of e.content) {
-        const v = evaluate(val, viro)
-      } // one of the map elements will throw an error if it isn't a value
-      return e
-  }
   const argnums = operatorMap.get(e.tag)!.arity
 
   const v1 = evaluate(e.e1, viro)
