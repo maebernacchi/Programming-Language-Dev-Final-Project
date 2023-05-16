@@ -169,6 +169,6 @@ export function substitute (v: Value, x: string, e: Exp): Exp {
     case 'und': return und(substitute(v, x, e.e1), substitute(v, x, e.e2))
     case 'oder': return oder(substitute(v, x, e.e1), substitute(v, x, e.e2))
     case 'falls': return falls(substitute(v, x, e.e1), substitute(v, x, e.e2), substitute(v, x, e.e3))
-    default: throw new Error('what did you break bro??? check substitute')
+    default: throw new Error('suchen nach Substitute')
   }
 }
