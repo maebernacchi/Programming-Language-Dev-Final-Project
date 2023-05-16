@@ -3,16 +3,18 @@
 /***** Abstract Syntax Tree ***************************************************/
 
 // Types
-export type Typ = TyNat | TyBool | TyFeld
+export type Typ = TyNat | TyBool | TyFeld | TyKlasse
 export type TyNat = { tag: 'nat' }
 export type TyBool = { tag: 'bool' }
-export type TyFeld = { tag: 'feld', t1: Typ, t2: Typ }
+export type TyFeld = { tag: 'feld', inputs: Typ[], output: Typ }
+export type TyKlasse = { tag: 'klasse', name: string, content: Map<string, Typ>}
 export const tynat: Typ = ({ tag: 'nat' })
 export const tybool: Typ = ({ tag: 'bool' })
-export const tyfeld = (t1: Typ, t2: Typ): Typ => ({ tag: 'feld', t1, t2 })
+export const tyfeld = (inputs: Typ[], output: Typ): Typ => ({ tag: 'feld', inputs, output })
+export const tyklasse = (name: string, content: Map<string, Typ>,): Typ => ({ tag: 'klasse', name, content})
 
 // Expressions
-export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda
+export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda | Klasse
 
 export type Var = { tag: 'var', value: string }
 export type Num = { tag: 'num', value: number }
@@ -23,6 +25,7 @@ export type Gleich = { tag: 'gleich', e1: Exp, e2: Exp }
 export type Und = { tag: 'und', e1: Exp, e2: Exp }
 export type Oder = { tag: 'oder', e1: Exp, e2: Exp }
 export type Falls = { tag: 'falls', e1: Exp, e2: Exp, e3: Exp }
+export type Klasse = { tag: 'klasse', name: string, content: Map<string, Exp>}
 export type SLambda = { tag: 'lambda', value: string, t: Typ, e1: Exp }
 
 export const evar = (value: string): Var => ({ tag: 'var', value })
@@ -34,11 +37,11 @@ export const gleich = (e1: Exp, e2: Exp): Exp => ({ tag: 'gleich', e1, e2 })
 export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
 export const oder = (e1: Exp, e2: Exp): Exp => ({ tag: 'oder', e1, e2 })
 export const falls = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'falls', e1, e2, e3 })
+export const klasse = (name: string, content: Map<string, Exp>): Klasse => ({ tag: 'klasse', name, content})
 export const slambda = (value: string, t: Typ, e1: Exp): Exp => ({ tag: 'lambda', value, t, e1 })
 
 // Values
-
-export type Value = Num | Bool | SLambda
+export type Value = Num | Bool | SLambda | Klasse
 
 // Statements
 
@@ -55,6 +58,21 @@ export type Stmt = SDefinieren | SDruck
 export type Prog = Stmt[]
 
 /***** Pretty-printer *********************************************************/
+/**@returns a pretty version of class*/
+export function prettyClass (e: Klasse): string {
+  let temp = ''
+  let x = 0
+  for( const [key, val] of e.content){
+    temp += e.name + ' '
+    temp += key + ' '
+    temp += prettyExp(val)
+    x++
+    if (x < e.content.size) {
+      temp += ' '
+    }
+  }
+  return 'not implemented'
+}
 
 /** @returns a pretty version of the expression `e`, suitable for debugging. */
 export function prettyExp (e: Exp): string {
@@ -69,7 +87,22 @@ export function prettyExp (e: Exp): string {
     case 'oder': return `(oder ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
     case 'falls': return `(falls ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
     case 'lambda': return `(lambda (${e.value} ${e.t.tag}) ${prettyExp(e.e1)})`
+    case 'klasse': return `(klasse (${e.tag} ${e.name} ${prettyClass(e)}))`
   }
+}
+
+function prettyKlasseTyp(e: TyKlasse) {
+  let temp = ''
+  let x = 0
+  for(const [key, val] of e.content) {
+    temp += key + ' '
+    temp += prettyTyp(val)
+    x++
+    if (x < e.content.size) {
+      temp += ' '
+    }
+  }
+  return temp
 }
 
 /** @returns a pretty version of the type `t`. */
@@ -77,7 +110,8 @@ export function prettyTyp (t: Typ): string {
   switch (t.tag) {
     case 'nat': return 'nat'
     case 'bool': return 'bool'
-    case 'feld': return 'feld'
+    case 'feld': return `(-> ${t.inputs.map(prettyTyp).join(' ')} ${prettyTyp(t.output)})`
+    case 'klasse': return `(rec ${prettyKlasseTyp(t)})`
   }
 }
 
@@ -102,7 +136,9 @@ export function typEquals (t1: Typ, t2: Typ): boolean {
   } else if (t1.tag === 'bool' && t2.tag === 'bool') {
     return true
   } else if (t1.tag === 'feld' && t2.tag === 'feld') {
-    return typEquals(t1.t1, t2.t1) && typEquals(t1.t2, t2.t2)
+    return typEquals(t1.output, t2.output) &&
+      t1.inputs.length === t2.inputs.length &&
+      t1.inputs.every((t, i) => typEquals(t, t2.inputs[i])) 
   } else return false
 }
 

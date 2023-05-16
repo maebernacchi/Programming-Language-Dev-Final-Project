@@ -57,6 +57,12 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
       return e
   }
 
+  if(e.tag === 'klasse'){
+      for (let [key, val] of e.content) {
+        const v = evaluate(val, viro)
+      } // one of the map elements will throw an error if it isn't a value
+      return e
+  }
   const argnums = operatorMap.get(e.tag)!.arity
 
   const v1 = evaluate(e.e1, viro)
@@ -85,6 +91,7 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
       }
     }
     case 'gleich': {
+      //@ts-ignore
       return L.bool(v1.value === v2.value)
     }
     case 'und': {
@@ -122,6 +129,7 @@ export function execute (env: L.Env, prog: L.Prog): Output {
       env = L.extendEnv(e.id, evaluate(e.exp, env), env)
     } else if (e.tag === 'druck') {
       const printed: L.Value = evaluate(e.exp, env)
+      //@ts-ignore
       stringouts.push(String(printed.value))
     } else {
       throw new Error('Es ist nicht ein Aussage.')
