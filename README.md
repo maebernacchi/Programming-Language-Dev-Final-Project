@@ -6,88 +6,71 @@ Right now there's an error with the typechecker which will require a lot of addi
 
 ### Syntax
 
-```
-This syntax has been copied from Lab 6 of CSC-312
-x, f are identifiers; n is a number; b is a boolean
+### Syntax
 
-t ::= Nat | Bool | (-> t1 t2) | (Rec f1 t1 ... fk tk)
+~~~
+t ::= Nat | Bool | Feld | Klasse
 
-e ::= x | n | b
-    | (lambda x t e)
-    | (e1 .. ek)
-    | (if e1 e2 e3)
-    | (re`c f1 e1 ... fk ek)
-    | (field e f)
-
-v ::= n | b | (lambda x t e) | (rec f1 v1 ... fk vk)
-
-s ::= (define x e) | (display e)
-
-prog ::= s1 ... sk
-```
-
-### Dynamic Semantics
-
-```
-σ is the runtime environemnt
-
-x:v ∈ σ
----------
-σ; x ⇓ v
-
-σ; e1 ⇓ true    σ; e2 ⇓ v
--------------------------
-σ; (if e1 e2 e3) ⇓ v
-
-σ; e1 ⇓ false    σ; e2 ⇓ v
---------------------------
-σ; (if e1 e2 e3) ⇓ v
-
-σ; e1 ⇓ (lambda (x t) e)
-σ; e2 ⇓ v
-σ; [v/x] e ⇓ v'
----------------------
-σ; (e1 e2) ⇓ v'
-
-σ; e ⇓ (f1 v1 ... f v ... fk vk)
---------------------------------
-σ; (field e f) ⇓ v
-```
+e ::= var | num | bool | (nicht e) | (+ e1 e2) | (und e1 e2)
+    | (oder e1 e2) | (= e1 e2) | (falls e1 e2 e3) | (lambda value t e1)
+~~~
 
 ### Typechecking
 
-```
-Γ is the typechecking context
+~~~
+-------
+var : evaar
 
-x:t ∈ Γ
----------
-Γ ⊢ x : t
+-------
+n : nat
 
------------
-Γ ⊢ n : Nat
+--------
+b : bool
 
------------
-Γ ⊢ b : Bool
+e1 : nat
+e2 : nat
+-------------
+e1 + e2 : nat
 
-x:t1, Γ ⊢ e : t2
---------------------------------
-Γ ⊢ (lambda x t1 e) : (-> t1 t2)
+e1 : nat
+-------------
+nicht e2 : nat
 
-Γ ⊢ e1 : (-> t1 t2)
-Γ ⊢ e2 : t1
--------------------
-Γ ⊢ (e1 e2) : t2
+e1 : nat 
+e2 : nat 
+   or
+e1 : bool
+e2 : bool
+-------------
+= e1 e2 : bool
 
-Γ ⊢ e1 : t1
-...
-Γ ⊢ ek : tk
-----------------------------------------------------
-Γ ⊢ (rec f1 e1 ... fk ek) : (Record f1 t1 ... fk tk)
+e1 : nat 
+e2 : nat 
+   or
+e1 : bool
+e2 : bool
+-------------
+und e1 e2 : bool
 
-Γ ⊢ e : (Record f1 t1 ... f t ... fk tk)
-----------------------------------------
-Γ ⊢ (field e f) : t
-```
+e1 : nat | bool
+e2 : nat | bool
+-------------
+oder e1 e2 : bool
+
+e1 : bool
+e2 : num | bool | var
+e2 : num | bool | var
+-------------
+falls e1 e2 e3 : num | bool | var
+
+
+value : stri g
+t : Nat | Bool | Feld | Klasse
+e1 : var | num | bool | (nicht e) | (+ e1 e2) | (und e1 e2)
+    | (oder e1 e2) | (= e1 e2) | (falls e1 e2 e3) | (lambda value t e1)
+-------------
+lambda value t e1
+~~~
 
 # Typescript Template
 
