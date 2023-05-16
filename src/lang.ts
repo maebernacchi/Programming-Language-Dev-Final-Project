@@ -7,11 +7,11 @@ export type Typ = TyNat | TyBool | TyFeld | TyKlasse
 export type TyNat = { tag: 'nat' }
 export type TyBool = { tag: 'bool' }
 export type TyFeld = { tag: 'feld', inputs: Typ[], output: Typ }
-export type TyKlasse = { tag: 'klasse', name: string, content: Map<string, Typ>}
+export type TyKlasse = { tag: 'klasse', exp: Exp[]}
 export const tynat: Typ = ({ tag: 'nat' })
 export const tybool: Typ = ({ tag: 'bool' })
 export const tyfeld = (inputs: Typ[], output: Typ): Typ => ({ tag: 'feld', inputs, output })
-export const tyklasse = (name: string, content: Map<string, Typ>,): Typ => ({ tag: 'klasse', name, content})
+export const tyklasse = (exp: Exp[]): Typ => ({ tag: 'klasse', exp})
 
 // Expressions
 export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda
@@ -70,17 +70,12 @@ export function prettyExp (e: Exp): string {
   }
 }
 
-function prettyKlasseTyp(e: TyKlasse) {
+function prettyKlasseTyp(e: TyKlasse): string {
   let temp = ''
-  let x = 0
-  for(const [key, val] of e.content) {
-    temp += key + ' '
-    temp += prettyTyp(val)
-    x++
-    if (x < e.content.size) {
-      temp += ' '
-    }
+  for(let i = 0; i < e.exp.length; i++) {
+    temp += prettyExp(e.exp[i]) + ' '
   }
+  temp += ' '
   return temp
 }
 
