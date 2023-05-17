@@ -21,8 +21,7 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
       } else {
         return L.tybool
       }
-    }
-    case 'plus': {
+    } case 'plus': {
       const t1 = typecheck(ctx, e.e1)
       const t2 = typecheck(ctx, e.e2)
       if (t1.tag !== 'nat') {
@@ -31,8 +30,7 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
         throw new Error(expectedTypeMsg('nat', 2, 'plus', t2.tag))
       }
       return L.tynat
-    }
-    case 'gleich': {
+    } case 'gleich': {
       const _t1 = typecheck(ctx, e.e1)
       const _t2 = typecheck(ctx, e.e2)
       if (_t1.tag === _t2.tag){
@@ -40,8 +38,7 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
       } else {
         throw new Error(expectedTypeMsg(_t1.tag, 1, 'gleich', _t2.tag))
       }
-    }
-    case 'und': {
+    } case 'und': {
       const t1 = typecheck(ctx, e.e1)
       const t2 = typecheck(ctx, e.e2)
       if (t1.tag !== 'bool') {
@@ -50,8 +47,7 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
         throw new Error(expectedTypeMsg('bool', 2, 'und', t2.tag))
       }
       return L.tybool
-    }
-    case 'oder': {
+    } case 'oder': {
       const t1 = typecheck(ctx, e.e1)
       const t2 = typecheck(ctx, e.e2)
       if (t1.tag !== 'bool') {
@@ -60,8 +56,7 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
         throw new Error(expectedTypeMsg('bool', 2, 'oder', t2.tag))
       }
       return L.tybool
-    }
-    case 'falls': {
+    } case 'falls': {
       const t1 = typecheck(ctx, e.e1)
       const t2 = typecheck(ctx, e.e2)
       const t3 = typecheck(ctx, e.e3)
@@ -71,6 +66,14 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
         throw new Error(expectedTypeMsg(t2.tag, 3, 'falls', t3.tag))
       }
       return t3
+    } case 'funktion': {
+      const t1 = typecheck(ctx, e.e1)
+      if (t1.tag === 'rekord') {
+        let f = t1.inputs.get(e.e2)
+        if (f !== undefined) {
+          return f
+        } else throw new Error(`Typ Fehler: ${e.e2} existert in ${t1} nicht`)
+      } else throw new Error(expectedTypeMsg('rec', 1, 'field', t1.tag))
     }
     default: throw new Error('Es gibt ein problem mit typechecker')
   }

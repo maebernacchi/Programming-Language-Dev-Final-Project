@@ -6,14 +6,13 @@
 /**
  * 
  * Monkey Brain explanation:
- * Thoughts of what I can easily do right now: 
+ * What I have done: 
  * Implement field and rec
  * Fix the typechecker and other files to properly parse the field and rec types
  * 
  * Questions I have:
  * Given that I set out to not make an object oriented language, I need assistance with understanding exactly
  * what steps I need to take in order to fully implement everything. 
- * 
  * What parts am I overthinking and what can I do to simplify the process for myself?
  * 
  */
