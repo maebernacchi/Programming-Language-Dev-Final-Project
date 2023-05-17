@@ -2,7 +2,7 @@
 
 Similar to C, this language is implemented with the ability to do basic calculations. The main goal of this program is not so much for the purpose of creating an in-depth, highly complicated language, but rather one that is accessible to those who don't have access to a proper educational environment in the computer science field. Currently this language is extremely primitive and scheme-like, but it is continuously being edited and made better. 
 
-Currently the language is technically functional (further testing will be done within the next few weeks)
+Currently the language is technically functional (further testing will be done within the next few weeks). There is also, finally, classes implemented, but given how much I have to do this finals week, they will also be included in the next few weeks of testing.
 
 ### Syntax
 

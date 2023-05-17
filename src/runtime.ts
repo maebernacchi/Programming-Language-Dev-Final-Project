@@ -154,4 +154,15 @@ export function execute (env: L.Env, prog: L.Prog): Output {
 }
 
 
+export function addToEnv (k: L.TyKlasse, env: L.Env): L.Env {
+  const name = k.name
+  let finPrim = L.prim
+  for(let i = 0; i < k.fields.length; i++){
+    finPrim.arguments[i] = k.fields[i]
+  }
+  return env.set(name, finPrim.arguments)
+}
+
+
+
 
