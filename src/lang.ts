@@ -2,21 +2,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /***** Abstract Syntax Tree ***************************************************/
 
-/**
- * 
- * What I have done: 
- * Implement field and rec
- * Fix the typechecker and other files to properly parse the field and rec types
- * 
- * Questions I have:
- * Given that I set out to not make an object oriented language, I need assistance with understanding exactly
- * what steps I need to take in order to fully implement everything. 
- * What parts am I overthinking and what can I do to simplify the process for myself?
- * 
- * Monkey Brain explanation:
- * class declaration introduces constructor function that makes a function like plus prim 
- * Think of creating a general prim function and then adding those to the map as they get hard coded into the folder. 
- */
 // Types
 export type Typ = TyNat | TyBool | TyFeld | TyKlasse | TyRek
 export type TyNat = { tag: 'nat' }
