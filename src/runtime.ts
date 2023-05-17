@@ -5,9 +5,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 import * as L from './lang'
-
 /** The output of our programs: a list of strings that our program printed. */
 export type Output = string[]
+
+function throwArityError (fn: string, expected: number, found: number): never {
+  throw new Error(`Runtime error: '${fn}' expects ${expected} argument(s) but ${found} were given`)
+}
+
+function throwUnexpectedError (fn: string, expected: string, pos: number, found: string): never {
+  throw new Error(`Type error: primitive '${fn}' expected ${expected} in position ${pos} but a ${found} was given`)
+}
 
 /** @return `f` but as a function that takes an array instead of 1 argument */
 function wrap1<T> (f: (_x: T) => T): (_args: T[]) => T {
@@ -54,6 +61,8 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
     case 'bool':
       return e
     case 'lambda':
+      return e
+    case 'nichts':
       return e
   }
   const argnums = operatorMap.get(e.tag)!.arity
@@ -126,8 +135,8 @@ export function execute (env: L.Env, prog: L.Prog): Output {
       stringouts.push(String(printed.value))
     } else if (e.tag === 'klasse'){
       stringouts.push(e.tag + ' ')
-      for(let i = 0; i < e.exp.length; i++){
-        stringouts.push(L.prettyExp(evaluate(e.exp[i], env)) + ' ')
+      for(let i = 0; i < e.fields.length; i++){
+        stringouts.push(e.fields[i] + ' ')
       }
     } else {
       throw new Error('Es ist nicht ein Aussage.')
@@ -135,3 +144,6 @@ export function execute (env: L.Env, prog: L.Prog): Output {
   }
   return stringouts
 }
+
+
+

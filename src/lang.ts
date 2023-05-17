@@ -7,14 +7,14 @@ export type Typ = TyNat | TyBool | TyFeld | TyKlasse
 export type TyNat = { tag: 'nat' }
 export type TyBool = { tag: 'bool' }
 export type TyFeld = { tag: 'feld', inputs: Typ[], output: Typ }
-export type TyKlasse = { tag: 'klasse', exp: Exp[]}
+export type TyKlasse = { tag: 'klasse', name: string, fields: string[]}
 export const tynat: Typ = ({ tag: 'nat' })
 export const tybool: Typ = ({ tag: 'bool' })
 export const tyfeld = (inputs: Typ[], output: Typ): Typ => ({ tag: 'feld', inputs, output })
-export const tyklasse = (exp: Exp[]): Typ => ({ tag: 'klasse', exp})
-
+export const tyklasse = (name: string, fields: string[]): Typ => ({ tag: 'klasse', name, fields})
+// sexp to translator 
 // Expressions
-export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda
+export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda | Nichts 
 export type Var = { tag: 'var', value: string }
 export type Num = { tag: 'num', value: number }
 export type Bool = { tag: 'bool', value: boolean }
@@ -25,6 +25,7 @@ export type Und = { tag: 'und', e1: Exp, e2: Exp }
 export type Oder = { tag: 'oder', e1: Exp, e2: Exp }
 export type Falls = { tag: 'falls', e1: Exp, e2: Exp, e3: Exp }
 export type SLambda = { tag: 'lambda', value: string, t: Typ, e1: Exp }
+export type Nichts = { tag: 'nichts'}
 
 export const evar = (value: string): Var => ({ tag: 'var', value })
 export const num = (value: number): Num => ({ tag: 'num', value })
@@ -36,29 +37,58 @@ export const und = (e1: Exp, e2: Exp): Exp => ({ tag: 'und', e1, e2 })
 export const oder = (e1: Exp, e2: Exp): Exp => ({ tag: 'oder', e1, e2 })
 export const falls = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'falls', e1, e2, e3 })
 export const slambda = (value: string, t: Typ, e1: Exp): Exp => ({ tag: 'lambda', value, t, e1 })
+export const nichts = (): Nichts => ({ tag: 'nichts'})
 
 // Values
-export type Value = Num | Bool | SLambda
+export type Value = Num | Bool | SLambda | Nichts | Prim | Schluss | Objekt
+export type Prim = { tag: 'prim', name: string, fn: (args: Value[]) => Value }
+export type Schluss = { tag: 'schluss', params: string[], body: Exp, env: Env }
+export type Objekt = { tag: 'objekt', proto: Objekt | Nichts, value: Map<string, Value> }
+export const prim = (name: string, fn: (args: Value[]) => Value): Prim => ({ tag: 'prim', name, fn })
+export const schluss = (params: string[], body: Exp, env: Env): Schluss => ({ tag: 'schluss', params, body, env })
+export const objekt = (proto: Objekt | Nichts, value: Map<string, Value>): Objekt => ({ tag: 'objekt', proto, value })
+
+// Statements
 
 // Statements
 export type Stmt = SDefinieren | SDruck | SKlasse
 export type SDefinieren = { tag: 'definieren', id: string, exp: Exp }
 export type SDruck = { tag: 'druck', exp: Exp }
-export type SKlasse = { tag: 'klasse', exp: Exp[]}
+export type SKlasse = { tag: 'klasse', name: string, fields: string[]}
 export const sdefinieren = (id: string, exp: Exp): Stmt => ({ tag: 'definieren', id, exp })
 export const sdruck = (exp: Exp): Stmt => ({ tag: 'druck', exp })
-export const klasse = (exp: Exp[]): Stmt => ({ tag: 'klasse', exp})
+export const klasse = (name: string, fields: string[]): Stmt => ({ tag: 'klasse', name, fields})
 
 // Programs
 export type Prog = Stmt[]
 
 /***** Pretty-printer *********************************************************/
+/** @returns a pretty version of the value `v`, suitable for debugging. */
+export function prettyValue (v: Value): string {
+  switch (v.tag) {
+    case 'num': return `${v.value}`
+    case 'bool': return v.value ? 'true' : 'false'
+    case 'prim': return `<prim ${v.name}>`
+    case 'schluss': return `<schluss>`
+    case 'objekt': {
+      let ret = '(obj'
+      for (const [str, ele] of v.value) {
+        ret += ` ${str} ${prettyValue(ele)}`
+      }
+      ret += ` proto:${prettyValue(v.proto)}`
+      ret += ')'
+      return ret
+    }
+    default: return `Du hast ein problem mit prettyValue`
+  }
+}
 
 /** @returns a pretty version of the expression `e`, suitable for debugging. */
 export function prettyExp (e: Exp): string {
   switch (e.tag) {
     case 'var': return `${e.value}`
     case 'num': return `${e.value}`
+    case 'nichts': return `nichts`
     case 'bool': return e.value ? 'richtig' : 'falsch'
     case 'nicht': return `(nicht ${prettyExp(e.e1)})`
     case 'plus': return `(+ ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
@@ -67,13 +97,14 @@ export function prettyExp (e: Exp): string {
     case 'oder': return `(oder ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
     case 'falls': return `(falls ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
     case 'lambda': return `(lambda (${e.value} ${e.t.tag}) ${prettyExp(e.e1)})`
+    default: return `Du hast ein problem mit prettyExp`
   }
 }
 
 function prettyKlasseTyp(e: TyKlasse): string {
   let temp = ''
-  for(let i = 0; i < e.exp.length; i++) {
-    temp += prettyExp(e.exp[i]) + ' '
+  for(let i = 0; i < e.fields.length; i++) {
+    temp += e.fields[i] + ' '
   }
   temp += ' '
   return temp
@@ -92,9 +123,8 @@ export function prettyTyp (t: Typ): string {
 /**@returns a pretty version of class*/
 export function prettyClass (e: SKlasse): string {
   let temp = ''
-  for(let i = 0; i < e.exp.length; i++){
-    temp += e.exp[i] + ' '
-    temp += prettyExp(e.exp[i])
+  for(let i = 0; i < e.fields.length; i++){
+    temp += e.fields[i] + ' '
     temp += ' '
   }
   return temp
@@ -162,7 +192,8 @@ export function substitute (v: Value, x: string, e: Exp): Exp {
   switch (e.tag) {
     case 'num': return e
     case 'bool': return e
-    case 'var': return (x === e.value) ? v : e
+    case 'nichts': return e
+    case 'lambda': return e
     case 'nicht': return nicht(substitute(v, x, e.e1))
     case 'plus': return plus(substitute(v, x, e.e1), substitute(v, x, e.e2))
     case 'gleich': return gleich(substitute(v, x, e.e1), substitute(v, x, e.e2))
