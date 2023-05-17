@@ -78,9 +78,3 @@ export function typecheck (ctx: L.Ctx, e: L.Exp): L.Typ {
     default: throw new Error('Es gibt ein problem mit typechecker')
   }
 }
-
-/*
-export function checkWF(ctx: L.Ctx, prog: L.Prog) {
-  // TODO: implement me!
-}
-*/
