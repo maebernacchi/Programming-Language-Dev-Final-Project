@@ -2,19 +2,37 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /***** Abstract Syntax Tree ***************************************************/
 
+
+/**
+ * 
+ * Monkey Brain explanation:
+ * Thoughts of what I can easily do right now: 
+ * Implement field and rec
+ * Fix the typechecker and other files to properly parse the field and rec types
+ * 
+ * Questions I have:
+ * Given that I set out to not make an object oriented language, I need assistance with understanding exactly
+ * what steps I need to take in order to fully implement everything. 
+ * 
+ * What parts am I overthinking and what can I do to simplify the process for myself?
+ * 
+ */
 // Types
-export type Typ = TyNat | TyBool | TyFeld | TyKlasse
+export type Typ = TyNat | TyBool | TyFeld | TyKlasse | TyRek
 export type TyNat = { tag: 'nat' }
 export type TyBool = { tag: 'bool' }
 export type TyFeld = { tag: 'feld', inputs: Typ[], output: Typ }
 export type TyKlasse = { tag: 'klasse', name: string, fields: string[]}
+export type TyRek = { tag: 'rekord', inputs: Map<String, Typ>}
+
 export const tynat: Typ = ({ tag: 'nat' })
 export const tybool: Typ = ({ tag: 'bool' })
-export const tyfeld = (inputs: Typ[], output: Typ): Typ => ({ tag: 'feld', inputs, output })
-export const tyklasse = (name: string, fields: string[]): Typ => ({ tag: 'klasse', name, fields})
-// sexp to translator 
+export const tyfeld = (inputs: Typ[], output: Typ): TyFeld => ({ tag: 'feld', inputs, output })
+export const tyklasse = (name: string, fields: string[]): TyKlasse => ({ tag: 'klasse', name, fields})
+export const tyrek = ( inputs: Map<String, Typ>): TyRek => ({ tag: 'rekord', inputs})
+
 // Expressions
-export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda | Nichts 
+export type Exp = Var | Num | Bool | Nicht | Plus | Gleich | Und | Oder | Falls | SLambda | Nichts | Funktion
 export type Var = { tag: 'var', value: string }
 export type Num = { tag: 'num', value: number }
 export type Bool = { tag: 'bool', value: boolean }
@@ -26,6 +44,7 @@ export type Oder = { tag: 'oder', e1: Exp, e2: Exp }
 export type Falls = { tag: 'falls', e1: Exp, e2: Exp, e3: Exp }
 export type SLambda = { tag: 'lambda', value: string, t: Typ, e1: Exp }
 export type Nichts = { tag: 'nichts'}
+export type Funktion = { tag: 'funktion', e1: Exp, e2: string}
 
 export const evar = (value: string): Var => ({ tag: 'var', value })
 export const num = (value: number): Num => ({ tag: 'num', value })
@@ -38,12 +57,14 @@ export const oder = (e1: Exp, e2: Exp): Exp => ({ tag: 'oder', e1, e2 })
 export const falls = (e1: Exp, e2: Exp, e3: Exp): Exp => ({ tag: 'falls', e1, e2, e3 })
 export const slambda = (value: string, t: Typ, e1: Exp): Exp => ({ tag: 'lambda', value, t, e1 })
 export const nichts = (): Nichts => ({ tag: 'nichts'})
+export const funktion = (e1: Exp, e2: string): Exp => ({ tag: 'funktion', e1, e2})
 
 // Values
-export type Value = Num | Bool | SLambda | Nichts | Prim | Schluss | Objekt
+export type Value = Num | Bool | SLambda | Nichts | Prim | Schluss | Objekt | TyRek
 export type Prim = { tag: 'prim', name: string, fn: (args: Value[]) => Value }
 export type Schluss = { tag: 'schluss', params: string[], body: Exp, env: Env }
 export type Objekt = { tag: 'objekt', proto: Objekt | Nichts, value: Map<string, Value> }
+
 export const prim = (name: string, fn: (args: Value[]) => Value): Prim => ({ tag: 'prim', name, fn })
 export const schluss = (params: string[], body: Exp, env: Env): Schluss => ({ tag: 'schluss', params, body, env })
 export const objekt = (proto: Objekt | Nichts, value: Map<string, Value>): Objekt => ({ tag: 'objekt', proto, value })
@@ -55,6 +76,7 @@ export type Stmt = SDefinieren | SDruck | SKlasse
 export type SDefinieren = { tag: 'definieren', id: string, exp: Exp }
 export type SDruck = { tag: 'druck', exp: Exp }
 export type SKlasse = { tag: 'klasse', name: string, fields: string[]}
+
 export const sdefinieren = (id: string, exp: Exp): Stmt => ({ tag: 'definieren', id, exp })
 export const sdruck = (exp: Exp): Stmt => ({ tag: 'druck', exp })
 export const klasse = (name: string, fields: string[]): Stmt => ({ tag: 'klasse', name, fields})
@@ -97,6 +119,7 @@ export function prettyExp (e: Exp): string {
     case 'oder': return `(oder ${prettyExp(e.e1)} ${prettyExp(e.e2)})`
     case 'falls': return `(falls ${prettyExp(e.e1)} ${prettyExp(e.e2)} ${prettyExp(e.e3)})`
     case 'lambda': return `(lambda (${e.value} ${e.t.tag}) ${prettyExp(e.e1)})`
+    case 'funktion': return `(funktion (${e.e1} ${e.e2}))`
     default: return `Du hast ein problem mit prettyExp`
   }
 }
@@ -110,13 +133,30 @@ function prettyKlasseTyp(e: TyKlasse): string {
   return temp
 }
 
+/** @returns a string of record fields and their types */
+function prettyRekTyp(e: TyRek) {
+  let temp = ''
+  let x = 0
+  for(const [key, val] of e.inputs) {
+    temp += key + ' '
+    temp += prettyTyp(val)
+    x++
+    if (x < e.inputs.size) {
+      temp += ' '
+    }
+  }
+  return temp
+}
+
+
 /** @returns a pretty version of the type `t`. */
 export function prettyTyp (t: Typ): string {
   switch (t.tag) {
     case 'nat': return 'nat'
     case 'bool': return 'bool'
     case 'feld': return `(-> ${t.inputs.map(prettyTyp).join(' ')} ${prettyTyp(t.output)})`
-    case 'klasse': return `(rec ${prettyKlasseTyp(t)})`
+    case 'klasse': return `(klasse ${prettyKlasseTyp(t)})`
+    case 'rekord': return `(rekord ${prettyRekTyp(t)})`
   }
 }
 

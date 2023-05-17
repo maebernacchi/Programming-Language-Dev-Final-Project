@@ -116,6 +116,14 @@ export function evaluate (e: L.Exp, viro: L.Env): L.Value {
       } else {
         throw new Error(`Typ Fehler: 'falls' erwartet ein Boolean in Schutz-Lage aber ein ${v1.tag} war gegeben.`)
       }
+    } case 'funktion': {
+      const v = evaluate(e.e1, viro)
+      if (v.tag === 'rekord') {
+        const ret = v.inputs.get(e.e2)
+        if (ret === undefined) {
+          throw new Error(`Runtime error: ${e.e2} does not exist in ${L.prettyExp(e.e1)}`)
+        } else return evaluate(e.e1, viro)
+      } else throw new Error(`Type error: 'field' expects a record in position 1 but a ${v.tag} was given`)
     }
     default:
       throw new Error('Ich weiß nicht.')
