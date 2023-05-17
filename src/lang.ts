@@ -44,7 +44,7 @@ export type Oder = { tag: 'oder', e1: Exp, e2: Exp }
 export type Falls = { tag: 'falls', e1: Exp, e2: Exp, e3: Exp }
 export type SLambda = { tag: 'lambda', value: string, t: Typ, e1: Exp }
 export type Nichts = { tag: 'nichts'}
-export type Funktion = { tag: 'funktion', e1: Exp, e2: string}
+export type Funktion = { tag: 'funktion', e1: Exp, e2: string} 
 
 export const evar = (value: string): Var => ({ tag: 'var', value })
 export const num = (value: number): Num => ({ tag: 'num', value })
