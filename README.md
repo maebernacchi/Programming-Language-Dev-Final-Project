@@ -6,8 +6,6 @@ Currently the language is technically functional (further testing will be done w
 
 ### Syntax
 
-### Syntax
-
 ~~~
 t ::= Nat | Bool | Feld | Klasse
 
@@ -63,8 +61,15 @@ e2 : num | bool | var
 -------------
 falls e1 e2 e3 : num | bool | var
 
+σ; e ⇓ (f1 v1 ... f v ... fk vk)
+--------------------------------
+σ; (field e f) ⇓ v
 
-value : stri g
+Γ ⊢ e : (Record f1 t1 ... f t ... fk tk)
+----------------------------------------
+Γ ⊢ (field e f) : t
+
+value : string
 t : Nat | Bool | Feld | Klasse
 e1 : var | num | bool | (nicht e) | (+ e1 e2) | (und e1 e2)
     | (oder e1 e2) | (= e1 e2) | (falls e1 e2 e3) | (lambda value t e1)
